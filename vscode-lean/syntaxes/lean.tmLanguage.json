@@ -1,0 +1,188 @@
+{
+  "name": "LEAN",
+  "scopeName": "source.lean",
+  "fileTypes": ["lean"],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#row-syntax"
+    },
+    {
+      "include": "#key-value"
+    },
+    {
+      "include": "#list-item"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.lean",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "row-syntax": {
+      "patterns": [
+        {
+          "name": "meta.row-definition.lean",
+          "match": "^(\\s*)([a-zA-Z_$][a-zA-Z0-9_$-]*)\\s*(\\()([^)]+)(\\))\\s*(:)\\s*$",
+          "captures": {
+            "2": {
+              "name": "entity.name.function.lean"
+            },
+            "3": {
+              "name": "punctuation.definition.parameters.begin.lean"
+            },
+            "4": {
+              "patterns": [
+                {
+                  "name": "variable.parameter.lean",
+                  "match": "[a-zA-Z_$][a-zA-Z0-9_$-]*"
+                },
+                {
+                  "name": "punctuation.separator.parameter.lean",
+                  "match": ","
+                }
+              ]
+            },
+            "5": {
+              "name": "punctuation.definition.parameters.end.lean"
+            },
+            "6": {
+              "name": "punctuation.separator.key-value.lean"
+            }
+          }
+        }
+      ]
+    },
+    "key-value": {
+      "patterns": [
+        {
+          "name": "meta.key-value.lean",
+          "match": "^(\\s*)([a-zA-Z_$][a-zA-Z0-9_$-]*)\\s*(:)\\s*(.*)$",
+          "captures": {
+            "2": {
+              "name": "variable.other.property.lean"
+            },
+            "3": {
+              "name": "punctuation.separator.key-value.lean"
+            },
+            "4": {
+              "patterns": [
+                {
+                  "include": "#values"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "list-item": {
+      "patterns": [
+        {
+          "name": "meta.list-item.lean",
+          "match": "^(\\s*)(-)\\s*(.*)$",
+          "captures": {
+            "2": {
+              "name": "punctuation.definition.list.begin.lean"
+            },
+            "3": {
+              "patterns": [
+                {
+                  "include": "#row-values"
+                },
+                {
+                  "include": "#values"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "row-values": {
+      "patterns": [
+        {
+          "name": "meta.row-values.lean",
+          "match": "([^,]+)(,)?",
+          "captures": {
+            "1": {
+              "patterns": [
+                {
+                  "include": "#values"
+                }
+              ]
+            },
+            "2": {
+              "name": "punctuation.separator.comma.lean"
+            }
+          }
+        }
+      ]
+    },
+    "values": {
+      "patterns": [
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#boolean"
+        },
+        {
+          "include": "#null"
+        }
+      ]
+    },
+    "string": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.lean",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.lean",
+              "match": "\\\\([\"\\\\/bfnrt]|u[0-9a-fA-F]{4})"
+            },
+            {
+              "name": "invalid.illegal.unrecognized-string-escape.lean",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "number": {
+      "patterns": [
+        {
+          "name": "constant.numeric.lean",
+          "match": "\\b-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+        }
+      ]
+    },
+    "boolean": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.lean",
+          "match": "\\b(true|false)\\b"
+        }
+      ]
+    },
+    "null": {
+      "patterns": [
+        {
+          "name": "constant.language.null.lean",
+          "match": "\\bnull\\b"
+        }
+      ]
+    }
+  }
+}
