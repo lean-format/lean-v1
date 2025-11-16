@@ -723,7 +723,7 @@ Future versions will maintain backward compatibility with 1.0 or clearly documen
 ## 15. Reference Implementation
 
 A reference JavaScript parser is available at:
-https://github.com/lean-format/lean-js *(placeholder)*
+https://github.com/lean-format/lean-js
 
 ---
 
@@ -757,7 +757,7 @@ null         = "null"
 **LEAN Format Specification v1.0**
 
 Created: 2025
-License: MIT (recommended)
+License: MIT
 
 Designed to be a modern, human-friendly alternative to JSON, YAML, and CSV for data interchange.
 
