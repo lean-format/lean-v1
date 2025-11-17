@@ -1,0 +1,26 @@
+{
+  "name": "@lean/cli",
+  "version": "1.0.0",
+  "description": "Command line interface for the LEAN data format",
+  "bin": {
+    "lean": "./bin/lean-format.js"
+  },
+  "type": "commonjs",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "node src/index.js",
+    "lint": "eslint src/**/*.js"
+  },
+  "dependencies": {
+    "@lean/core": "file:../core"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.22.0",
+    "@babel/preset-env": "^7.22.0",
+    "@rollup/plugin-babel": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "eslint": "^8.42.0",
+    "rollup": "^3.25.0"
+  }
+}
+
