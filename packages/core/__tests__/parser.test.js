@@ -5,7 +5,6 @@
 
 const { parse: parseLean, format: toLean } = require('../src');
 
-// Simple test framework
 class TestRunner {
   constructor() {
     this.tests = [];
