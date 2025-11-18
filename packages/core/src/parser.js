@@ -7,7 +7,7 @@
  * @module parser
  */
 
-class LeanParser {
+export class LeanParser {
   constructor(options = {}) {
     this.strict = options.strict || false;
     this.preserveComments = options.preserveComments || false;
@@ -435,7 +435,5 @@ class LeanParser {
     throw new Error(`LEAN Parse Error at line ${line}: ${message}`);
   }
 }
-
-module.exports = { LeanParser };
 
 

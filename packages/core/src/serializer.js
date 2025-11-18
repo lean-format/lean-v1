@@ -3,7 +3,7 @@
  * @module serializer
  */
 
-function toLean(obj, options = {}) {
+export function toLean(obj, options = {}) {
   const indent = options.indent || '  ';
   const useRowSyntax = options.useRowSyntax !== false;
   const rowThreshold = options.rowThreshold || 3;
@@ -92,5 +92,3 @@ function toLean(obj, options = {}) {
 
   return toLeanObject(obj, 0).trimEnd();
 }
-
-module.exports = { toLean };

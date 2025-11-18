@@ -1,4 +1,4 @@
-const { LeanParser } = require('./parser');
+import { LeanParser } from './parser.js';
 
 /**
  * Validate LEAN format text
@@ -6,7 +6,7 @@ const { LeanParser } = require('./parser');
  * @param {Object} options - Validation options
  * @returns {Object} { valid: boolean, errors: Array<{line, message}> }
  */
-function validate(input, options = {}) {
+export function validate(input, options = {}) {
   const errors = [];
   
   try {
@@ -30,5 +30,3 @@ function validate(input, options = {}) {
     return { valid: false, errors };
   }
 }
-
-module.exports = { validate };

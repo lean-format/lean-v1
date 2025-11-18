@@ -1,6 +1,7 @@
-const { LeanParser } = require('./parser');
-const { toLean } = require('./serializer');
-const { validate } = require('./validator');
+import { LeanParser } from './parser.js';
+import { toLean } from './serializer.js';
+import { validate } from './validator.js';
+
 
 /**
  * Parse LEAN format text into JavaScript object
@@ -52,10 +53,4 @@ function validateInput(input, options = {}) {
   return validate(input, options);
 }
 
-module.exports = {
-  parse,
-  format,
-  validate: validateInput,
-  LeanParser,
-  toLean
-};
+export { parse, format, validateInput as validate, LeanParser, toLean };
