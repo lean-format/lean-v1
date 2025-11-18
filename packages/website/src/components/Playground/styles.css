@@ -1,0 +1,148 @@
+.playground {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.header h1 {
+    color: #2d3748;
+    margin-bottom: 1rem;
+}
+
+.controls {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.control-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #4a5568;
+}
+
+.control-group input[type="number"] {
+    width: 60px;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+}
+
+.control-group select {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    background-color: white;
+}
+
+.editor-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    height: 70vh;
+}
+
+@media (max-width: 768px) {
+    .editor-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.editor {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.editor h2 {
+    margin: 0;
+    padding: 1rem;
+    font-size: 1rem;
+    background: #f7fafc;
+    border-bottom: 1px solid #e2e8f0;
+    color: #4a5568;
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+    background: #f7fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tabs button {
+    padding: 0.25rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.tabs button.active {
+    background: #3182ce;
+    color: white;
+    border-color: #3182ce;
+}
+
+textarea, .output {
+    flex: 1;
+    padding: 1rem;
+    border: none;
+    resize: none;
+    font-family: 'Fira Code', 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    background: white;
+    color: #2d3748;
+}
+
+.output {
+    overflow: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.output pre {
+    margin: 0;
+    font-family: inherit;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.error {
+    color: #e53e3e;
+    padding: 1rem;
+    background: #fff5f5;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    font-family: 'Fira Code', 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 
 export default function Page() {
     useEffect(() => {
@@ -276,18 +277,34 @@ console.log(lean);`}
                 <div className="features">
                     <div className="feature">
                         <h3>📖 Specification</h3>
-                        <p>Complete format specification with grammar and rules.</p>
-                        <a href="#" className="btn btn-primary" style={{ marginTop: '1rem' }}>Read Spec</a>
+                        <p>Complete format specification with grammar and rules, including syntax, data types, and best practices.</p>
+                        <a 
+                            href="https://github.com/lean-format/lean-js#readme" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="btn btn-primary" 
+                            style={{ marginTop: '1rem' }}
+                        >
+                            Read Spec
+                        </a>
                     </div>
                     <div className="feature">
                         <h3>💻 API Reference</h3>
-                        <p>Full API documentation for all functions and options.</p>
-                        <a href="#" className="btn btn-primary" style={{ marginTop: '1rem' }}>View API</a>
+                        <p>Documentation for parse(), format(), and validate() functions with all available options.</p>
+                        <a 
+                            href="https://github.com/lean-format/lean-js#api-reference" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="btn btn-primary" 
+                            style={{ marginTop: '1rem' }}
+                        >
+                            View API
+                        </a>
                     </div>
                     <div className="feature">
                         <h3>🎮 Playground</h3>
                         <p>Try LEAN format interactively in your browser.</p>
-                        <a href="#" className="btn btn-primary" style={{ marginTop: '1rem' }}>Open Playground</a>
+                        <Link href="/playground" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>Open Playground</Link>
                     </div>
                 </div>
             </section>
