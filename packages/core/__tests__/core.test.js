@@ -41,7 +41,7 @@ describe('LEAN Core', () => {
       expect(result).toContain('age: 30');
     });
 
-    test('should format nested objects', () => {
+    test('should format nested objects with dot notation', () => {
       const obj = {
         person: {
           name: 'John',
@@ -49,9 +49,9 @@ describe('LEAN Core', () => {
         }
       };
       const result = format(obj);
-      expect(result).toContain('person:');
-      expect(result).toContain('name: John');
-      expect(result).toContain('age: 30');
+      // With dot notation, we expect person.name and person.age instead of nested structure
+      expect(result).toContain('person.name: John');
+      expect(result).toContain('person.age: 30');
     });
   });
 
