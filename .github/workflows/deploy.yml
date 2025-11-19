@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy LEAN Format
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd packages/website
-          npm ci
+          npm install
           
       - name: Build and export
         run: |
