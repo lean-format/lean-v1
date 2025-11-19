@@ -75,3 +75,4 @@ Thumbs.db
 next-env.d.ts
 
 /packages/website/.next/
+/packages/website/.next/

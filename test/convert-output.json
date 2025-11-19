@@ -1,0 +1,65 @@
+{
+  "project": {
+    "name": "My Project",
+    "version": 1,
+    "active": true,
+    "tags": [
+      "demo",
+      "example",
+      "lean"
+    ]
+  },
+  "users": [
+    {
+      "id": 1,
+      "name": "Alice",
+      "email": "alice@example.com",
+      "age": 30
+    },
+    {
+      "id": 2,
+      "name": "Bob",
+      "email": "bob@example.com",
+      "age": 25
+    },
+    {
+      "id": 3,
+      "name": "Casey",
+      "email": "casey@example.com",
+      "age": 28
+    }
+  ],
+  "blog": {
+    "title": "My Blog",
+    "author": {
+      "name": "Alice",
+      "email": "alice@example.com"
+    },
+    "posts": [
+      {
+        "id": 1,
+        "title": "First Post",
+        "content": "Hello, world!"
+      },
+      {
+        "id": 2,
+        "title": "Second Post",
+        "content": "Another post"
+      }
+    ],
+    "tags": [
+      "tech",
+      "programming",
+      "blog"
+    ]
+  },
+  "config": {
+    "debug": false,
+    "timeout": 5000,
+    "features": {
+      "api": true,
+      "cache": true,
+      "logging": false
+    }
+  }
+}
