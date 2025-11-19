@@ -7,9 +7,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "export": "next build && next export -o out",
+    "predeploy": "npm run build && npm run export",
+    "deploy": "gh-pages -d out"
   },
   "dependencies": {
+    "@lean/core": "file:../core",
+    "gh-pages": "^6.1.0",
     "next": "15.4.7",
     "react": "18.2.0",
     "react-dom": "18.2.0"
