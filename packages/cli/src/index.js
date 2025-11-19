@@ -204,13 +204,18 @@ users(id, name, email, age):
     - 3, Casey, casey@example.com, 28
 
 # Tasks with nested structure
-tasks:
-    - title: "Learn LEAN format"
-      status: completed
-      priority: high
-    - title: "Build something cool"
-      status: in_progress
-      priority: medium
+blog:
+    title: "My Blog"
+    author:
+        name: Alice
+        email: alice@example.com
+    posts(id, title, content):
+        - 1, "First Post", "Hello, world!"
+        - 2, "Second Post", "Another post"
+    tags:
+        - tech
+        - programming
+        - blog
 
 # Configuration
 config:
