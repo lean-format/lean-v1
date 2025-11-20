@@ -2,6 +2,11 @@ import { LeanParser } from './parser.js';
 import { toLean } from './serializer.js';
 import { validate } from './validator.js';
 
+/**
+ * @license
+ * Copyright (c) 2025 LEAN Format Team and contributors
+ * Licensed under MIT License
+ */
 
 /**
  * Parse LEAN format text into JavaScript object

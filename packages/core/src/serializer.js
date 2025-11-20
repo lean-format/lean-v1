@@ -1,4 +1,10 @@
 /**
+ * @license
+ * Copyright (c) 2025 LEAN Format Team and contributors
+ * Licensed under MIT License
+ */
+
+/**
  * Convert JavaScript object to LEAN format
  * @module serializer
  */

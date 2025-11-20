@@ -1,6 +1,7 @@
 {
   "name": "@lean/cli",
   "version": "1.0.0",
+  "license": "MIT",
   "description": "Command line interface for the LEAN data format",
   "bin": {
     "lean": "./bin/lean-format.js"

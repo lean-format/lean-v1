@@ -1,4 +1,10 @@
 /**
+ * @license
+ * Copyright (c) 2025 LEAN Format Team and contributors
+ * Licensed under MIT License
+ */
+
+/**
  * LEAN Format Parser - Reference Implementation
  * Version: 1.0.0
  *

@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright (c) 2025 LEAN Format Team and contributors
+ * Licensed under MIT License
+ */
+
 import { LeanParser } from './parser.js';
 
 /**
