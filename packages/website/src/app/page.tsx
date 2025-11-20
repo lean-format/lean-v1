@@ -1,50 +1,97 @@
 "use client"
 
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 
 export default function Page() {
-    useEffect(() => {
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(anchor.getAttribute('href')!);
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth' });
-                }
-            });
-        });
+    const [copiedText, setCopiedText] = useState('');
 
+    useEffect(() => {
+        // Smooth scrolling for anchor links
+        const handleAnchorClick = (e: MouseEvent) => {
+            const target = e.target as HTMLAnchorElement;
+            if (target.matches('a[href^="#"]')) {
+                e.preventDefault();
+                const href = target.getAttribute('href');
+                const targetElement = document.querySelector(href!);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        };
+
+        document.addEventListener('click', handleAnchorClick);
+
+        // Intersection Observer for animations
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('animate');
                 }
             });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.feature, section').forEach(el => {
-            observer.observe(el);
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
         });
+
+        const elementsToObserve = document.querySelectorAll('.feature, .code-block, .comparison, .quick-start');
+        elementsToObserve.forEach(el => observer.observe(el));
+
+        return () => {
+            document.removeEventListener('click', handleAnchorClick);
+            observer.disconnect();
+        };
     }, []);
 
-    const copyToClipboard = (text: string) => {
-        navigator.clipboard.writeText(text).then(() => {
-            alert('Copied to clipboard!');
-        });
+    const copyToClipboard = useCallback(async (text: string) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopiedText(text);
+            setTimeout(() => setCopiedText(''), 2000);
+        } catch (err) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            setCopiedText(text);
+            setTimeout(() => setCopiedText(''), 2000);
+        }
+    }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     return (
         <>
+            {/* Toast Notification */}
+            {copiedText && (
+                <div className="toast">
+                    ✅ Copied to clipboard!
+                </div>
+            )}
+
+            {/* Scroll to Top Button */}
+            <button
+                className="scroll-to-top"
+                onClick={scrollToTop}
+                aria-label="Scroll to top"
+            >
+                ↑
+            </button>
+
             <header>
                 <nav>
                     <div className="logo">
                         <span>
                             <svg width="30" height="20" viewBox="0 0 30 30">
-                        <rect x="0" y="6" width="37" height="3" fill="white" rx="2"/>
-                        <rect x="0" y="16" width="28" height="3" fill="white" rx="2" opacity="0.8"/>
-                        <rect x="0" y="26" width="16" height="3" fill="white" rx="2" opacity="0.6"/>
-                    </svg>
+                                <rect x="0" y="6" width="37" height="3" fill="white" rx="2"/>
+                                <rect x="0" y="16" width="28" height="3" fill="white" rx="2" opacity="0.8"/>
+                                <rect x="0" y="26" width="16" height="3" fill="white" rx="2" opacity="0.6"/>
+                            </svg>
                         </span>
                         <span>LEAN</span>
                     </div>
@@ -53,18 +100,73 @@ export default function Page() {
                         <li><a href="#examples">Examples</a></li>
                         <li><a href="#install">Install</a></li>
                         <li><a href="#docs">Docs</a></li>
-                        <li><a href="https://github.com/lean-format/lean-js">GitHub</a></li>
+                        <li><a href="https://github.com/lean-format/lean-js" target="_blank" rel="noopener noreferrer">GitHub</a></li>
                     </ul>
+                    <div className="nav-actions">
+                        <Link href="/playground" className="btn btn-outline">Try Playground</Link>
+                    </div>
                 </nav>
             </header>
 
             <section className="hero">
-                <h1 className="animate">LEAN Format</h1>
-                <p className="animate">Lightweight Efficient Adaptive Notation</p>
-                <p className="animate">A minimal, human-readable data format that combines JSON's flexibility with CSV's compactness</p>
-                <div className="cta-buttons animate">
-                    <a href="#install" className="btn btn-primary">Get Started</a>
-                    <a href="#examples" className="btn btn-secondary">See Examples</a>
+                <div className="hero-content">
+                    <h1 className="animate">LEAN Format</h1>
+                    <p className="hero-subtitle animate">Lightweight Efficient Adaptive Notation</p>
+                    <p className="hero-description animate">
+                        A minimal, human-readable data format that combines JSON's flexibility with CSV's compactness
+                    </p>
+                    <div className="hero-stats animate">
+                        <div className="stat">
+                            <span className="stat-number">70%</span>
+                            <span className="stat-label">Smaller than JSON</span>
+                        </div>
+                        <div className="stat">
+                            <span className="stat-number">5min</span>
+                            <span className="stat-label">To learn</span>
+                        </div>
+                        <div className="stat">
+                            <span className="stat-number">100%</span>
+                            <span className="stat-label">Compatible</span>
+                        </div>
+                    </div>
+                    <div className="cta-buttons animate">
+                        <a href="#install" className="btn btn-primary">Get Started</a>
+                        <a href="#examples" className="btn btn-secondary">See Examples</a>
+                        <Link href="/playground" className="btn btn-outline">Try Playground</Link>
+                    </div>
+                </div>
+                <div className="hero-visual">
+                    <div className="code-preview">
+                        <div className="code-preview-header">
+                            <div className="code-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                        <pre className="lean-preview">
+                            <code>
+                                <span className="comment"># Clean, readable syntax</span>
+                                {'\n'}
+                                <span className="key">users</span>(<span className="key">id</span>, <span className="key">name</span>, <span className="key">email</span>):
+                                {'\n'}
+                                {'  '}- <span className="number">1</span>, <span className="string">"Alice"</span>, <span className="string">"alice@example.com"</span>
+                                {'\n'}
+                                {'  '}- <span className="number">2</span>, <span className="string">"Bob"</span>, <span className="string">"bob@example.com"</span>
+                                {'\n'}
+                                {'\n'}
+                                <span className="key">config</span>:
+                                {'\n'}
+                                {'  '}<span className="key">theme</span>: <span className="string">"dark"</span>
+                                {'\n'}
+                                {'  '}<span className="key">features</span>:
+                                {'\n'}
+                                {'    '}- <span className="string">"auth"</span>
+                                {'\n'}
+                                {'    '}- <span className="string">"api"</span>
+                            </code>
+                        </pre>
+                    </div>
                 </div>
             </section>
 
@@ -93,46 +195,55 @@ export default function Page() {
 
             <section id="examples">
                 <h2>See the Difference</h2>
-                <p>Compare how LEAN represents the same data versus JSON:</p>
+                <p className="section-subtitle">Compare how LEAN represents the same data versus JSON:</p>
 
                 <div className="code-example">
                     <div className="code-block">
-                        <div className="code-label">LEAN</div>
+                        <div className="code-label">LEAN - 126 chars</div>
                         <pre>
-              <span className="comment"># Compact and readable</span>{'\n'}
-                            <span className="key">users</span>(<span className="key">id</span>, <span className="key">name</span>, <span className="key">email</span>, <span className="key">age</span>):{'\n'}
-                            {'    '}- <span className="number">1</span>, <span className="string">Alice</span>, <span className="string">alice@example.com</span>, <span className="number">30</span>{'\n'}
-                            {'    '}- <span className="number">2</span>, <span className="string">Bob</span>, <span className="string">bob@example.com</span>, <span className="number">25</span>{'\n'}
-                            {'    '}- <span className="number">3</span>, <span className="string">Casey</span>, <span className="string">casey@example.com</span>, <span className="number">28</span>
-            </pre>
+                            <code>
+                                <span className="comment"># Compact and readable</span>{'\n'}
+                                <span className="key">users</span>(<span className="key">id</span>, <span className="key">name</span>, <span className="key">email</span>, <span className="key">age</span>):{'\n'}
+                                {'    '}- <span className="number">1</span>, <span className="string">"Alice"</span>, <span className="string">"alice@example.com"</span>, <span className="number">30</span>{'\n'}
+                                {'    '}- <span className="number">2</span>, <span className="string">"Bob"</span>, <span className="string">"bob@example.com"</span>, <span className="number">25</span>{'\n'}
+                                {'    '}- <span className="number">3</span>, <span className="string">"Casey"</span>, <span className="string">"casey@example.com"</span>, <span className="number">28</span>
+                            </code>
+                        </pre>
                     </div>
                     <div className="code-block">
-                        <div className="code-label">JSON</div>
+                        <div className="code-label">JSON - 284 chars</div>
                         <pre>
-              {`{
-  `}<span className="key">"users"</span>: [{`
+                            <code>
+                                {`{
+  "users": [
     {
-      `}<span className="key">"id"</span>: <span className="number">1</span>,{`
-      `}<span className="key">"name"</span>: <span className="string">"Alice"</span>,{`
-      `}<span className="key">"email"</span>: <span className="string">"alice@example.com"</span>,{`
-      `}<span className="key">"age"</span>: <span className="number">30</span>{`
+      "id": 1,
+      "name": "Alice",
+      "email": "alice@example.com",
+      "age": 30
     },
     {
-      `}<span className="key">"id"</span>: <span className="number">2</span>,{`
-      `}<span className="key">"name"</span>: <span className="string">"Bob"</span>,{`
-      `}<span className="key">"email"</span>: <span className="string">"bob@example.com"</span>,{`
-      `}<span className="key">"age"</span>: <span className="number">25</span>{`
+      "id": 2,
+      "name": "Bob",
+      "email": "bob@example.com",
+      "age": 25
     },
     {
-      `}<span className="key">"id"</span>: <span className="number">3</span>,{`
-      `}<span className="key">"name"</span>: <span className="string">"Casey"</span>,{`
-      `}<span className="key">"email"</span>: <span className="string">"casey@example.com"</span>,{`
-      `}<span className="key">"age"</span>: <span className="number">28</span>{`
+      "id": 3,
+      "name": "Casey",
+      "email": "casey@example.com",
+      "age": 28
     }
   ]
 }`}
-            </pre>
+                            </code>
+                        </pre>
                     </div>
+                </div>
+
+                <div className="efficiency-badge">
+                    <span className="efficiency-icon">🎯</span>
+                    <span className="efficiency-text">55% more efficient</span>
                 </div>
 
                 <h3>Complex Nested Structures</h3>
@@ -141,25 +252,29 @@ export default function Page() {
                 <div className="code-block">
                     <div className="code-label">LEAN</div>
                     <pre>
-            <span className="key">blog</span>:{'\n'}
-                        {'    '}<span className="key">title</span>: <span className="string">"Tech Insights"</span>{'\n'}
-                        {'    '}<span className="key">author</span>: <span className="string">Alice</span>{'\n'}
-                        {'    '}<span className="key">tags</span>:{'\n'}
-                        {'        '}- <span className="string">technology</span>{'\n'}
-                        {'        '}- <span className="string">programming</span>{'\n'}
-                        {'        '}- <span className="string">ai</span>{'\n'}
-                        {'    '}<span className="key">posts</span>(<span className="key">id</span>, <span className="key">title</span>, <span className="key">date</span>, <span className="key">views</span>):{'\n'}
-                        {'        '}- <span className="number">1</span>, <span className="string">"Getting Started"</span>, <span className="string">"2025-01-15"</span>, <span className="number">1250</span>{'\n'}
-                        {'        '}- <span className="number">2</span>, <span className="string">"Advanced Topics"</span>, <span className="string">"2025-02-01"</span>, <span className="number">890</span>{'\n'}
-                        {'    '}<span className="key">config</span>:{'\n'}
-                        {'        '}<span className="key">theme</span>: <span className="string">dark</span>{'\n'}
-                        {'        '}<span className="key">comments</span>: <span className="keyword">true</span>
-          </pre>
+                        <code>
+                            <span className="key">blog</span>:{'\n'}
+                            {'    '}<span className="key">title</span>: <span className="string">"Tech Insights"</span>{'\n'}
+                            {'    '}<span className="key">author</span>: <span className="string">"Alice"</span>{'\n'}
+                            {'    '}<span className="key">tags</span>:{'\n'}
+                            {'        '}- <span className="string">"technology"</span>{'\n'}
+                            {'        '}- <span className="string">"programming"</span>{'\n'}
+                            {'        '}- <span className="string">"ai"</span>{'\n'}
+                            {'    '}<span className="key">posts</span>(<span className="key">id</span>, <span className="key">title</span>, <span className="key">date</span>, <span className="key">views</span>):{'\n'}
+                            {'        '}- <span className="number">1</span>, <span className="string">"Getting Started"</span>, <span className="string">"2025-01-15"</span>, <span className="number">1250</span>{'\n'}
+                            {'        '}- <span className="number">2</span>, <span className="string">"Advanced Topics"</span>, <span className="string">"2025-02-01"</span>, <span className="number">890</span>{'\n'}
+                            {'    '}<span className="key">config</span>:{'\n'}
+                            {'        '}<span className="key">theme</span>: <span className="string">"dark"</span>{'\n'}
+                            {'        '}<span className="key">comments</span>: <span className="keyword">true</span>
+                        </code>
+                    </pre>
                 </div>
             </section>
 
-            <section>
+            <section className="comparison-section">
                 <h2>Format Comparison</h2>
+                <p className="section-subtitle">See how LEAN compares to other popular formats</p>
+
                 <div className="comparison">
                     <table>
                         <thead>
@@ -175,44 +290,44 @@ export default function Page() {
                         <tr>
                             <td>Human-readable</td>
                             <td><span className="partial">⚠️ Verbose</span></td>
-                            <td><span className="check">✓</span></td>
+                            <td><span className="check">✓ Excellent</span></td>
                             <td><span className="partial">⚠️ Limited</span></td>
-                            <td><span className="check">✓</span></td>
+                            <td><span className="check">✓ Excellent</span></td>
                         </tr>
                         <tr>
                             <td>Compact rows</td>
-                            <td><span className="cross">✗</span></td>
-                            <td><span className="cross">✗</span></td>
-                            <td><span className="check">✓</span></td>
-                            <td><span className="check">✓</span></td>
+                            <td><span className="cross">✗ No</span></td>
+                            <td><span className="cross">✗ No</span></td>
+                            <td><span className="check">✓ Yes</span></td>
+                            <td><span className="check">✓ Yes</span></td>
                         </tr>
                         <tr>
                             <td>Nested objects</td>
-                            <td><span className="check">✓</span></td>
-                            <td><span className="check">✓</span></td>
-                            <td><span className="cross">✗</span></td>
-                            <td><span className="check">✓</span></td>
+                            <td><span className="check">✓ Yes</span></td>
+                            <td><span className="check">✓ Yes</span></td>
+                            <td><span className="cross">✗ No</span></td>
+                            <td><span className="check">✓ Yes</span></td>
                         </tr>
                         <tr>
                             <td>No key repetition</td>
-                            <td><span className="cross">✗</span></td>
-                            <td><span className="cross">✗</span></td>
-                            <td><span className="check">✓</span></td>
-                            <td><span className="check">✓</span></td>
+                            <td><span className="cross">✗ No</span></td>
+                            <td><span className="cross">✗ No</span></td>
+                            <td><span className="check">✓ Yes</span></td>
+                            <td><span className="check">✓ Yes</span></td>
                         </tr>
                         <tr>
                             <td>Comments</td>
-                            <td><span className="cross">✗</span></td>
-                            <td><span className="check">✓</span></td>
-                            <td><span className="cross">✗</span></td>
-                            <td><span className="check">✓</span></td>
+                            <td><span className="cross">✗ No</span></td>
+                            <td><span className="check">✓ Yes</span></td>
+                            <td><span className="cross">✗ No</span></td>
+                            <td><span className="check">✓ Yes</span></td>
                         </tr>
                         <tr>
                             <td>Easy to parse</td>
-                            <td><span className="check">✓</span></td>
+                            <td><span className="check">✓ Easy</span></td>
                             <td><span className="partial">⚠️ Complex</span></td>
-                            <td><span className="check">✓</span></td>
-                            <td><span className="check">✓</span></td>
+                            <td><span className="check">✓ Easy</span></td>
+                            <td><span className="check">✓ Easy</span></td>
                         </tr>
                         </tbody>
                     </table>
@@ -221,123 +336,130 @@ export default function Page() {
 
             <section id="install">
                 <h2>Quick Start</h2>
+                <p className="section-subtitle">Get started with LEAN in minutes</p>
+
                 <div className="quick-start">
-                    <h3>Installation</h3>
-                    <div className="install-command">
-                        <span>npm install lean-format</span>
-                        <button className="copy-btn" onClick={() => copyToClipboard('npm install lean-format')}>Copy</button>
+                    <div className="install-step">
+                        <h3>1. Installation</h3>
+                        <div className="install-command">
+                            <code>npm install lean-format</code>
+                            <button
+                                className="copy-btn"
+                                onClick={() => copyToClipboard('npm install lean-format')}
+                                aria-label="Copy install command"
+                            >
+                                {copiedText === 'npm install lean-format' ? '✅' : '📋'}
+                            </button>
+                        </div>
                     </div>
 
-                    <h3>Node.js Usage</h3>
-                    <div className="code-block">
-            <pre>
-              <span className="keyword">const</span> {`{ parse, format } = `}<span className="keyword">require</span>(<span className="string">'lean-format'</span>);{'\n\n'}
-                <span className="comment">// Parse LEAN to JavaScript</span>{'\n'}
-                <span className="keyword">const</span> {` data = parse(`}<span className="string">{`\`
+                    <div className="install-step">
+                        <h3>2. Node.js Usage</h3>
+                        <div className="code-block">
+                            <pre>
+                                <code>
+                                    <span className="keyword">const</span> {`{ parse, format } = `}<span className="keyword">require</span>(<span className="string">'lean-format'</span>);{'\n\n'}
+                                    <span className="comment">// Parse LEAN to JavaScript</span>{'\n'}
+                                    <span className="keyword">const</span> {` data = parse(`}<span className="string">{`\`
 users(id, name, age):
     - 1, Alice, 30
     - 2, Bob, 25
-\``}</span>{`);
-
-`}<span className="comment">// Format JavaScript as LEAN</span>{'\n'}
-                <span className="keyword">const</span> {` lean = format(data);
+\``}</span>{`);`}{'\n\n'}
+                                    <span className="comment">// Format JavaScript as LEAN</span>{'\n'}
+                                    <span className="keyword">const</span> {` lean = format(data);
 console.log(lean);`}
-            </pre>
+                                </code>
+                            </pre>
+                        </div>
                     </div>
 
-                    <h3>Browser Usage</h3>
-                    <div className="code-block">
-            <pre>
-              <span className="keyword">&lt;script</span> src=<span className="string">"https://unpkg.com/lean-format"</span><span className="keyword">&gt;&lt;/script&gt;</span>{'\n'}
-                <span className="keyword">&lt;script&gt;</span>{'\n'}
-                {'  '}<span className="keyword">const</span> {`{ parse, format } = LEAN;
-  `}<span className="keyword">const</span> data = parse(<span className="string">'key: value'</span>);{'\n'}
-                <span className="keyword">&lt;/script&gt;</span>
-            </pre>
-                    </div>
-
-                    <h3>Command Line</h3>
-                    <div className="code-block">
-            <pre>
-              <span className="comment"># Parse LEAN to JSON</span>{'\n'}
-                {`lean parse data.lean
-
-`}<span className="comment"># Format JSON as LEAN</span>{'\n'}
-                {`lean format data.json
-
-`}<span className="comment"># Watch and auto-convert</span>{'\n'}
-                lean watch data.lean
-            </pre>
+                    <div className="install-step">
+                        <h3>3. Try It Live</h3>
+                        <p>Experiment with LEAN in our interactive playground:</p>
+                        <Link href="/playground" className="btn btn-primary">
+                            🎮 Open Playground
+                        </Link>
                     </div>
                 </div>
             </section>
 
             <section id="docs">
                 <h2>Documentation</h2>
-                <div className="features">
-                    <div className="feature">
-                        <h3>📖 Specification</h3>
+                <p className="section-subtitle">Everything you need to master LEAN</p>
+
+                <div className="doc-cards">
+                    <div className="doc-card">
+                        <div className="doc-icon">📖</div>
+                        <h3>Specification</h3>
                         <p>Complete format specification with grammar and rules, including syntax, data types, and best practices.</p>
-                        <a 
-                            href="https://github.com/lean-format/lean-js#readme" 
-                            target="_blank" 
+                        <a
+                            href="https://github.com/lean-format/lean-js#readme"
+                            target="_blank"
                             rel="noopener noreferrer"
-                            className="btn btn-primary" 
-                            style={{ marginTop: '1rem' }}
+                            className="btn btn-outline"
                         >
                             Read Spec
                         </a>
                     </div>
-                    <div className="feature">
-                        <h3>💻 API Reference</h3>
+                    <div className="doc-card">
+                        <div className="doc-icon">💻</div>
+                        <h3>API Reference</h3>
                         <p>Documentation for parse(), format(), and validate() functions with all available options.</p>
-                        <a 
-                            href="https://github.com/lean-format/lean-js#api-reference" 
-                            target="_blank" 
+                        <a
+                            href="https://github.com/lean-format/lean-js#api-reference"
+                            target="_blank"
                             rel="noopener noreferrer"
-                            className="btn btn-primary" 
-                            style={{ marginTop: '1rem' }}
+                            className="btn btn-outline"
                         >
                             View API
                         </a>
                     </div>
-                    <div className="feature">
-                        <h3>🎮 Playground</h3>
-                        <p>Try LEAN format interactively in your browser.</p>
-                        <Link href="/playground" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>Open Playground</Link>
+                    <div className="doc-card">
+                        <div className="doc-icon">🎮</div>
+                        <h3>Playground</h3>
+                        <p>Try LEAN format interactively in your browser with real-time conversion and examples.</p>
+                        <Link href="/playground" className="btn btn-primary">
+                            Open Playground
+                        </Link>
                     </div>
                 </div>
             </section>
 
             <footer>
                 <div className="footer-content">
-                    <div className="footer-section">
-                        <h4>Resources</h4>
-                        <a href="#">Documentation</a>
-                        <a href="#">Specification</a>
-                        <a href="#">API Reference</a>
-                        <a href="#">Playground</a>
+                    <div className="footer-brand">
+                        <div className="logo">
+                            <svg width="30" height="20" viewBox="0 0 30 30">
+                                <rect x="0" y="6" width="37" height="3" fill="white" rx="2"/>
+                                <rect x="0" y="16" width="28" height="3" fill="white" rx="2" opacity="0.8"/>
+                                <rect x="0" y="26" width="16" height="3" fill="white" rx="2" opacity="0.6"/>
+                            </svg>
+                            <span>LEAN Format</span>
+                        </div>
+                        <p>Lightweight Efficient Adaptive Notation for modern data serialization.</p>
                     </div>
-                    <div className="footer-section">
-                        <h4>Tools</h4>
-                        <a href="#">NPM Package</a>
-                        <a href="#">CLI Tool</a>
-                        <a href="#">VS Code Extension</a>
-                        <a href="#">Online Converter</a>
-                    </div>
-                    <div className="footer-section">
-                        <h4>Community</h4>
-                        <a href="https://github.com/lean-format/lean-js">GitHub</a>
-                        <a href="#">Discord</a>
-                        <a href="#">Twitter</a>
-                        <a href="#">Stack Overflow</a>
-                    </div>
-                    <div className="footer-section">
-                        <h4>More</h4>
-                        <a href="#">Blog</a>
-                        <a href="#">Examples</a>
-                        <a href="#">Contributing</a>
-                        <a href="#">License (MIT)</a>
+                    <div className="footer-links">
+                        <div className="footer-section">
+                            <h4>Resources</h4>
+                            <a href="#docs">Documentation</a>
+                            <a href="#examples">Examples</a>
+                            <a href="#install">Quick Start</a>
+                            <Link href="/playground">Playground</Link>
+                        </div>
+                        <div className="footer-section">
+                            <h4>Tools</h4>
+                            <a href="https://www.npmjs.com/package/lean-format">NPM Package</a>
+                            <a href="https://github.com/lean-format/lean-js">CLI Tool</a>
+                            <a href="#">VS Code Extension</a>
+                            <a href="#">Online Converter</a>
+                        </div>
+                        <div className="footer-section">
+                            <h4>Community</h4>
+                            <a href="https://github.com/lean-format/lean-js">GitHub</a>
+                            <a href="#">Discord</a>
+                            <a href="#">Twitter</a>
+                            <a href="#">Stack Overflow</a>
+                        </div>
                     </div>
                 </div>
                 <div className="footer-bottom">

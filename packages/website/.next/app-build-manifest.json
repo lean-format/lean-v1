@@ -1,41 +1,25 @@
 {
   "pages": {
-    "/_not-found/page": [
-      "static/chunks/webpack-129dab009faedcb8.js",
-      "static/chunks/87c73c54-1f4741035a95c140.js",
-      "static/chunks/902-c9c84a52c05b07a5.js",
-      "static/chunks/main-app-3a79b6cff68db96b.js",
-      "static/chunks/app/_not-found/page-22a15f2b93d4307e.js"
-    ],
     "/layout": [
-      "static/chunks/webpack-129dab009faedcb8.js",
-      "static/chunks/87c73c54-1f4741035a95c140.js",
-      "static/chunks/902-c9c84a52c05b07a5.js",
-      "static/chunks/main-app-3a79b6cff68db96b.js",
-      "static/css/928730e748e91854.css",
-      "static/chunks/app/layout-cfd863e1451e0f1d.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/layout.css",
+      "static/chunks/app/layout.js"
     ],
     "/page": [
-      "static/chunks/webpack-129dab009faedcb8.js",
-      "static/chunks/87c73c54-1f4741035a95c140.js",
-      "static/chunks/902-c9c84a52c05b07a5.js",
-      "static/chunks/main-app-3a79b6cff68db96b.js",
-      "static/chunks/261-a65c5532d55fb83f.js",
-      "static/chunks/app/page-939fdc66524cde99.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/page.js"
     ],
     "/playground/layout": [
-      "static/chunks/webpack-129dab009faedcb8.js",
-      "static/chunks/87c73c54-1f4741035a95c140.js",
-      "static/chunks/902-c9c84a52c05b07a5.js",
-      "static/chunks/main-app-3a79b6cff68db96b.js",
-      "static/chunks/app/playground/layout-99c870ceb29259eb.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/playground/layout.js"
     ],
     "/playground/page": [
-      "static/chunks/webpack-129dab009faedcb8.js",
-      "static/chunks/87c73c54-1f4741035a95c140.js",
-      "static/chunks/902-c9c84a52c05b07a5.js",
-      "static/chunks/main-app-3a79b6cff68db96b.js",
-      "static/chunks/app/playground/page-d289bbefdc5fd826.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/playground/page.js"
     ]
   }
 }
