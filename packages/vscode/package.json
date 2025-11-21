@@ -69,7 +69,8 @@
   "main": "./extension.js",
   "scripts": {
     "package": "vsce package",
-    "publish": "vsce publish"
+    "publish": "vsce publish",
+    "test": "echo \"VS Code extension - no automated tests\" && exit 0"
   },
   "devDependencies": {
     "@types/vscode": "^1.80.0",

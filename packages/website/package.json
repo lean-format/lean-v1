@@ -13,7 +13,8 @@
     "serve": "npm run build:test && npx serve out",
     "export": "next build",
     "predeploy": "npm run export",
-    "deploy": "gh-pages -d out"
+    "deploy": "gh-pages -d out",
+    "test": "echo \"UI package - no automated tests\" && exit 0"
   },
   "dependencies": {
     "@lean-format/core": "^1.0.1",

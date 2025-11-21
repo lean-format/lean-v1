@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "echo \"UI package - no automated tests\" && exit 0"
   },
   "dependencies": {
     "@lean-format/core": "^1.0.1",
@@ -21,4 +22,3 @@
     "vite": "7.1.11"
   }
 }
-
