@@ -32,7 +32,7 @@ npm run serve
 
 ## Deployment
 
-The website automatically deploys to GitHub Pages when pushing to the `restruct` branch.
+The website automatically deploys to GitHub Pages when pushing to the `main` branch.
 
 Deployed at: https://lean-format.github.io/lean-v1/
 

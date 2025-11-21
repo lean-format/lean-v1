@@ -283,7 +283,7 @@ const data = parse(input, { strict: true });
 
 ## 📚 Resources
 
-- [Full Specification](https://github.com/lean-format/lean-v1/blob/restruct/SPECIFICATION.md)
+- [Full Specification](https://github.com/lean-format/lean-v1/blob/main/SPECIFICATION.md)
 - [Online Playground](https://lean-format.github.io/lean-v1/playground)
 - [VS Code Extension](https://marketplace.visualstudio.com/items?itemName=lean-format.lean-format)
 - [GitHub Repository](https://github.com/lean-format/lean-v1)

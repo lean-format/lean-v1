@@ -99,7 +99,7 @@ lean watch config.lean
 
 ## Learn More
 
-- [LEAN Format Specification](https://github.com/lean-format/lean-v1/blob/restruct/SPECIFICATION.md)
+- [LEAN Format Specification](https://github.com/lean-format/lean-v1/blob/main/SPECIFICATION.md)
 - [Report Issues](https://github.com/lean-format/lean-v1/issues)
 - [Website](https://lean-format.github.io/lean-v1/)
 
