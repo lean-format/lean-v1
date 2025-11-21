@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2025-11-21
 
 ### Added
-- **Core Library (@lean/core)**
+- **Core Library (@lean-format/core)**
   - Complete LEAN parser with Lexer/Parser architecture
   - Comprehensive serializer with row syntax support
   - Schema validation system (JSON Schema-like)
@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 94% test coverage (175 tests)
   - Support for dot notation, row syntax, and all LEAN features
 
-- **CLI Tool (@lean/cli)**
+- **CLI Tool (@lean-format/cli)**
   - Parse, format, validate, and convert commands
   - Unix-style stdin/stdout piping support
   - Cross-platform watch mode with chokidar
@@ -40,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Restructured from standalone package to monorepo
-- Migrated VS Code extension to use @lean/core library
+- Migrated VS Code extension to use @lean-format/core library
 - Enhanced test suite with comprehensive coverage
 
 ### Fixed

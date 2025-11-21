@@ -2,7 +2,7 @@ name: Deploy LEAN Format
 
 on:
   push:
-    branches: [restruct]
+    branches: [main]
   workflow_dispatch:
 
 permissions:

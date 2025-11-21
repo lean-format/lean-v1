@@ -20,13 +20,13 @@ Accept: application/lean
 
 ### Install
 ```bash
-npm install @lean/core express
+npm install @lean-format/core express
 ```
 
 ### Basic Server
 ```javascript
 import express from 'express';
-import { parse, format } from '@lean/core';
+import { parse, format } from '@lean-format/core';
 
 const app = express();
 
@@ -71,7 +71,7 @@ app.listen(3000);
 
 ### Advanced Example with Validation
 ```javascript
-import { parse, format, validateSchema } from '@lean/core';
+import { parse, format, validateSchema } from '@lean-format/core';
 
 const userSchema = {
   type: 'object',
@@ -455,4 +455,4 @@ app.post('/api/bulk', (req, res) => {
 
 - [Postman Collection](../examples/postman_collection.json)
 - [LEAN Specification](../SPECIFICATION.md)
-- [npm Package (@lean/core)](https://npmjs.com/package/@lean/core)
+- [npm Package (@lean-format/core)](https://npmjs.com/package/@lean-format/core)

@@ -393,7 +393,7 @@ console.log(lean);`}
                         <h3>Specification</h3>
                         <p>Complete format specification with grammar and rules, including syntax, data types, and best practices.</p>
                         <a
-                            href="https://github.com/lean-format/lean-v1/blob/restruct/SPECIFICATION.md"
+                            href="https://github.com/lean-format/lean-v1/blob/main/SPECIFICATION.md"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn btn-outline"
@@ -406,7 +406,7 @@ console.log(lean);`}
                         <h3>API Reference</h3>
                         <p>Documentation for parse(), format(), and validate() functions with all available options.</p>
                         <a
-                            href="https://github.com/lean-format/lean-v1/blob/restruct/docs/API_INTEGRATION.md"
+                            href="https://github.com/lean-format/lean-v1/blob/main/docs/API_INTEGRATION.md"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn btn-outline"
@@ -448,9 +448,9 @@ console.log(lean);`}
                         </div>
                         <div className="footer-section">
                             <h4>Tools</h4>
-                            <a href="https://www.npmjs.com/package/@lean/core" target="_blank" rel="noopener noreferrer">NPM Package</a>
-                            <a href="https://github.com/lean-format/lean-v1/tree/main/packages/cli" target="_blank" rel="noopener noreferrer">CLI Tool</a>
-                            <a href="https://github.com/lean-format/lean-v1/tree/main/packages/vscode" target="_blank" rel="noopener noreferrer">VS Code Extension</a>
+                            <a href="https://www.npmjs.com/package/@lean-format/core" target="_blank" rel="noopener noreferrer">NPM Package</a>
+                            <a href="https://www.npmjs.com/package/@lean-format/cli" target="_blank" rel="noopener noreferrer">CLI Tool</a>
+                            <a href="https://marketplace.visualstudio.com/items?itemName=lean-format.lean-format" target="_blank" rel="noopener noreferrer">VS Code Extension</a>
                             <Link href="/playground">Online Converter</Link>
                         </div>
                         <div className="footer-section">

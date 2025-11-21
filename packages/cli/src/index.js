@@ -10,7 +10,7 @@ const path = require('path');
 
 let coreModule;
 try {
-    coreModule = require('@lean/core');
+    coreModule = require('@lean-format/core');
 } catch (error) {
     coreModule = require('../../core/src');
 }

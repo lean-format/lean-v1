@@ -1,7 +1,7 @@
 const vscode = require('vscode');
 
 // Import LEAN core library for parsing, formatting, and validation
-const { parse, format, validate } = require('@lean/core');
+const { parse, format, validate } = require('@lean-format/core');
 
 function activate(context) {
     console.log('LEAN format extension is now active');

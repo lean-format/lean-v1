@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { parse, format } from '@lean/core';
+import { parse, format } from '@lean-format/core';
 
 const DEFAULT_LEAN = `users(id, name, email, age):
     - 1, Alice, "alice@example.com", 30

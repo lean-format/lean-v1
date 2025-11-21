@@ -57,8 +57,8 @@ npm install -g @lean-format/cli  # Command-line tool
 ## Learn More
 
 - [Documentation](https://lean-format.github.io/lean-v1/)
-- [Specification](https://github.com/lean-format/lean-v1/blob/restruct/SPECIFICATION.md)
-- [API Reference](https://github.com/lean-format/lean-v1/blob/restruct/docs/API_INTEGRATION.md)
+- [Specification](https://github.com/lean-format/lean-v1/blob/main/SPECIFICATION.md)
+- [API Reference](https://github.com/lean-format/lean-v1/blob/main/docs/API_INTEGRATION.md)
 - [GitHub Repository](https://github.com/lean-format/lean-v1)
 
 ## License
