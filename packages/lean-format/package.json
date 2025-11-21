@@ -1,0 +1,35 @@
+{
+    "name": "lean-format",
+    "version": "1.0.1",
+    "description": "LEAN Format - A minimal, human-readable data interchange format (meta package)",
+    "main": "index.js",
+    "types": "index.d.ts",
+    "type": "module",
+    "author": "LEAN Format Team",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/lean-format/lean-v1.git"
+    },
+    "bugs": {
+        "url": "https://github.com/lean-format/lean-v1/issues"
+    },
+    "homepage": "https://lean-format.github.io/lean-v1/",
+    "keywords": [
+        "lean",
+        "format",
+        "data",
+        "notation",
+        "parser",
+        "serializer",
+        "json",
+        "yaml",
+        "interchange"
+    ],
+    "dependencies": {
+        "@lean-format/core": "^1.0.1"
+    },
+    "engines": {
+        "node": ">=12.0.0"
+    }
+}

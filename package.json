@@ -1,0 +1,40 @@
+{
+  "name": "lean-format-monorepo",
+  "version": "1.0.0",
+  "description": "LEAN Format - Complete project repository",
+  "private": true,
+  "workspaces": [
+    "packages/core",
+    "packages/cli",
+    "packages/vscode",
+    "packages/playground",
+    "packages/website",
+    "packages/lean-format"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "npm run build && changeset publish",
+    "test:parser": "node packages/core/__tests__/parser.test.js",
+    "lint": "npm run lint -w @lean/core",
+    "dev:playground": "npm run dev -w @lean/playground",
+    "dev:website": "npm run dev -w @lean/website"
+  },
+  "keywords": [
+    "lean",
+    "format",
+    "data",
+    "notation"
+  ],
+  "author": "LEAN Format Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lean-format/lean-v1.git"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.7"
+  }
+}
