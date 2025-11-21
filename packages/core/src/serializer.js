@@ -28,7 +28,7 @@ function flattenObject(obj, prefix = '') {
 }
 
 export class LeanSerializer {
-    constructor(options = {}) {
+    constructor(options = {}) { // eol option available via this.options.eol if needed
         this.options = options;
     }
 
@@ -41,7 +41,7 @@ export function toLean(obj, options = {}) {
     // Default options with row syntax enabled by default
     const {
         indent = '  ',
-        eol = '\n',
+        // eol = '\n',  // Available in options but not used in current implementation
         useRowSyntax = true,  // Enable row syntax by default
         rowThreshold = 1      // Use row syntax even for a single row
     } = options;
@@ -56,7 +56,17 @@ export function toLean(obj, options = {}) {
             // - Contains whitespace, comma, colon, brackets, braces, hash
             // - Starts with digit or hyphen (could be confused with number)
             // - Is a keyword (true, false, null)
-            if (/[\s,:\[\]\{\}#]/.test(value) || /^[0-9-]/.test(value) || value === 'true' || value === 'false' || value === 'null') {
+            const needsQuotes = (str) => {
+                // Check for characters that require quoting
+                if (/[\s,:[\]{}#]/.test(str)) return true;
+                // Check if it starts with a digit or hyphen (could be confused with number)
+                if (/^[0-9-]/.test(str)) return true;
+                // Check if it's a keyword
+                if (str === 'true' || str === 'false' || str === 'null') return true;
+                return false;
+            };
+
+            if (needsQuotes(value)) {
                 return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
             }
             return value;
