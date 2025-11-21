@@ -4,123 +4,266 @@
  * Licensed under MIT License
  */
 
-/**
- * LEAN Format Parser - Reference Implementation
- * Version: 1.0.0
- *
- * A complete parser for the LEAN (Lightweight Efficient Adaptive Notation) format.
- * Converts LEAN text to JavaScript objects (JSON-compatible).
- * @module parser
- */
+import { Lexer, TokenType } from './lexer.js';
 
 export class LeanParser {
     constructor(options = {}) {
         this.strict = options.strict || false;
-        this.preserveComments = options.preserveComments || false;
-        this.input = '';
-        this.lines = [];
-        this.currentLine = 0;
-        this.indentSize = null;
-        this.indentChar = null;
+        this.tokens = [];
+        this.pos = 0;
     }
 
-    /**
-     * Main parse method
-     */
     parse(input) {
-        this.input = input;
-        this.lines = this.normalizeLines(input);
-        this.currentLine = 0;
-        this.indentSize = null;
-        this.indentChar = null;
+        const lexer = new Lexer(input);
+        this.tokens = lexer.tokenize();
+        this.pos = 0;
 
-        const result = this.parseDocument();
+        const result = this.parseBlock();
 
-        if (this.currentLine < this.lines.length) {
-            this.error('Unexpected content after end of document');
+        if (this.peek().type !== TokenType.EOF) {
+            throw new Error(`Unexpected token after end of document: ${this.peek().type}`);
         }
 
         return result;
     }
 
-    /**
-     * Normalize line endings and split into lines
-     */
-    normalizeLines(input) {
-        return input
-            .replace(/\r\n/g, '\n')
-            .replace(/\r/g, '\n')
-            .split('\n')
-            .map((line, idx) => ({
-                text: line,
-                number: idx + 1,
-                indent: this.getIndent(line),
-                content: line.trim()
-            }));
-    }
+    parseBlock() {
+        const obj = {};
 
-    /**
-     * Get indentation level and validate consistency
-     */
-    getIndent(line) {
-        const match = line.match(/^(\s*)/);
-        if (!match) return 0;
-
-        const whitespace = match[1];
-        if (whitespace.length === 0) return 0;
-
-        // Detect indentation character on first indent
-        if (this.indentChar === null) {
-            this.indentChar = whitespace[0];
-            if (this.indentChar === ' ') {
-                // Detect 2-space or 4-space
-                const spaces = whitespace.length;
-                this.indentSize = spaces <= 2 ? 2 : 4;
-            } else if (this.indentChar === '\t') {
-                this.indentSize = 1;
+        while (this.peek().type !== TokenType.EOF && this.peek().type !== TokenType.DEDENT) {
+            if (this.peek().type === TokenType.INDENT) {
+                throw new Error(`Unexpected indentation at document root (or inside block) at line ${this.peek().line}`);
             }
-        }
-
-        // Validate consistent indentation
-        for (let i = 0; i < whitespace.length; i++) {
-            if (whitespace[i] !== this.indentChar) {
-                this.error('Mixed indentation (spaces and tabs)', this.currentLine);
-            }
-        }
-
-        return whitespace.length / (this.indentSize || 1);
-    }
-
-    /**
-     * Parse entire document
-     */
-    parseDocument() {
-        const result = {};
-
-        while (this.currentLine < this.lines.length) {
-            const line = this.lines[this.currentLine];
-
-            // Skip empty lines and comments
-            if (!line.content || line.content.startsWith('#')) {
-                this.currentLine++;
+            if (this.peek().type === TokenType.NEWLINE) {
+                this.advance();
                 continue;
             }
 
-            // Top-level items must have 0 indent
-            if (line.indent !== 0) {
-                this.error('Unexpected indentation at document root');
+            const item = this.parseItem();
+            if (item) {
+                this.deepMerge(obj, item);
             }
-
-            const item = this.parseItem(0);
-            this.mergeIntoResult(result, item);
         }
 
+        return obj;
+    }
+
+    deepMerge(target, source) {
+        for (const key in source) {
+            if (source[key] instanceof Object && key in target && target[key] instanceof Object && !Array.isArray(target[key]) && !Array.isArray(source[key])) {
+                this.deepMerge(target[key], source[key]);
+            } else {
+                target[key] = source[key];
+            }
+        }
+    }
+
+    parseItem() {
+        const keyToken = this.peek();
+
+        // Check for list item
+        if (keyToken.type === TokenType.HYPHEN) {
+            // This shouldn't happen at the block level usually, unless it's a top-level list (not supported by spec but possible)
+            // Or if we are inside a list parsing context.
+            // However, parseBlock expects key-value pairs.
+            // If we encounter a hyphen here, it might be a syntax error or a list value where a key was expected.
+            // For now, let's assume blocks are objects.
+            throw new Error(`Unexpected list item at line ${keyToken.line}. Expected key.`);
+        }
+
+        if (keyToken.type !== TokenType.IDENTIFIER && keyToken.type !== TokenType.STRING) {
+            // It might be a comment or something else we skip? Lexer handles comments.
+            // If it's EOF or DEDENT, we should have caught it in the loop.
+            throw new Error(`Expected key-value pair or row syntax (identifier) at line ${keyToken.line}, found ${keyToken.type}`);
+        }
+
+        const key = keyToken.value;
+        this.advance();
+
+        // Check for Row Syntax: key(col1, col2):
+        if (this.peek().type === TokenType.LPAREN) {
+            return this.parseRowList(key);
+        }
+
+        // Standard Key-Value: key: value
+        if (this.peek().type !== TokenType.COLON) {
+            throw new Error(`Expected ':' after key at line ${keyToken.line}`);
+        }
+        this.advance(); // Skip colon
+
+        const value = this.parseValue();
+
+        // Handle dot notation
+        if (typeof key === 'string' && key.includes('.')) {
+            return this.expandDotNotation(key, value);
+        }
+
+        return { [key]: value };
+    }
+
+    parseRowList(key) {
+        this.consume(TokenType.LPAREN);
+        const columns = [];
+
+        while (this.peek().type !== TokenType.RPAREN) {
+            const col = this.consume(TokenType.IDENTIFIER).value;
+            columns.push(col);
+
+            if (this.peek().type === TokenType.COMMA) {
+                this.advance();
+            }
+        }
+        this.consume(TokenType.RPAREN);
+        this.consume(TokenType.COLON);
+        if (this.peek().type === TokenType.NEWLINE) {
+            this.advance();
+        } else if (this.peek().type === TokenType.EOF) {
+            // Allow EOF after colon
+        } else {
+            throw new Error(`Expected NEWLINE or EOF after colon at line ${this.peek().line}`);
+        }
+
+        if (this.peek().type === TokenType.INDENT) {
+            this.consume(TokenType.INDENT);
+        } else {
+            // If no indent, maybe empty row list?
+            // If EOF, we are done.
+            if (this.peek().type === TokenType.EOF) {
+                return { [key]: [] };
+            }
+            // If not indent and not EOF, it's an error or empty list?
+            // "users(id):" -> empty list.
+            // If next token is not INDENT, we assume empty list.
+            return { [key]: [] };
+        }
+
+        const rows = [];
+        while (this.peek().type === TokenType.HYPHEN) {
+            this.advance(); // Skip hyphen
+            const row = {};
+            const values = [];
+
+            // Parse row values (comma separated)
+            // We can't use parseValue() directly because it might consume newlines for objects/lists
+            // Row values are simple values on the same line
+
+            while (this.peek().type !== TokenType.NEWLINE && this.peek().type !== TokenType.EOF) {
+                values.push(this.parseSimpleValue());
+                if (this.peek().type === TokenType.COMMA) {
+                    this.advance();
+                } else {
+                    break;
+                }
+            }
+
+            // Validate strict mode
+            if (this.strict && values.length > columns.length) {
+                throw new Error(`Row has ${values.length} values but header defines ${columns.length} columns at line ${this.peek().line}`);
+            }
+
+            columns.forEach((col, idx) => {
+                row[col] = idx < values.length ? values[idx] : null;
+            });
+            rows.push(row);
+
+            if (this.peek().type === TokenType.NEWLINE) {
+                this.advance();
+            }
+        }
+
+        this.consume(TokenType.DEDENT);
+
+        // Handle dot notation
+        if (typeof key === 'string' && key.includes('.')) {
+            return this.expandDotNotation(key, rows);
+        }
+
+        return { [key]: rows };
+    }
+
+    parseValue() {
+        // Check for nested block (Indent)
+        if (this.peek().type === TokenType.NEWLINE) {
+            this.advance();
+            if (this.peek().type === TokenType.INDENT) {
+                this.advance();
+
+                // Check if it's a list or an object
+                if (this.peek().type === TokenType.HYPHEN) {
+                    const list = this.parseList();
+                    this.consume(TokenType.DEDENT);
+                    return list;
+                } else {
+                    const obj = this.parseBlock();
+                    this.consume(TokenType.DEDENT);
+                    return obj;
+                }
+            } else {
+                return null; // Empty value
+            }
+        }
+
+        if (this.peek().type === TokenType.EOF || this.peek().type === TokenType.DEDENT) {
+            return null; // Empty value at end of block/file
+        }
+
+        // Simple value on the same line
+        return this.parseSimpleValue();
+    }
+
+    parseList() {
+        const list = [];
+        while (this.peek().type === TokenType.HYPHEN) {
+            this.advance(); // Skip hyphen
+
+            // Check if it's a complex item (nested object/list)
+            if (this.peek().type === TokenType.NEWLINE) {
+                this.advance();
+                this.consume(TokenType.INDENT);
+                if (this.peek().type === TokenType.HYPHEN) {
+                    list.push(this.parseList());
+                } else {
+                    list.push(this.parseBlock());
+                }
+                this.consume(TokenType.DEDENT);
+            } else {
+                // Simple value
+                list.push(this.parseSimpleValue());
+                if (this.peek().type === TokenType.NEWLINE) {
+                    this.advance();
+                }
+            }
+        }
+        return list;
+    }
+
+    parseSimpleValue() {
+        const token = this.peek();
+        this.advance();
+
+        switch (token.type) {
+            case TokenType.STRING:
+            case TokenType.NUMBER:
+            case TokenType.BOOLEAN:
+            case TokenType.NULL:
+                return token.value;
+            case TokenType.IDENTIFIER:
+                return token.value; // Unquoted string
+            default:
+                throw new Error(`Unexpected token for value: ${token.type} at line ${token.line}`);
+        }
+    }
+
+    expandDotNotation(key, value) {
+        const keys = key.split('.');
+        let result = value;
+
+        for (let i = keys.length - 1; i >= 0; i--) {
+            result = { [keys[i]]: result };
+        }
         return result;
     }
 
-    /**
-     * Merge parsed item into result, handling deep nesting
-     */
     mergeIntoResult(result, item) {
         for (const [key, value] of Object.entries(item)) {
             if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
@@ -133,345 +276,25 @@ export class LeanParser {
                     result[key] = value;
                 }
             } else {
-                // Last value wins - don't check for duplicates
                 result[key] = value;
             }
         }
     }
 
-    /**
-     * Parse a single item (key-value pair, list, or row list)
-     */
-    parseItem(expectedIndent) {
-        const line = this.lines[this.currentLine];
-        if (!line) {
-            return null;
-        }
-
-        // Handle row syntax (e.g., "users(id, name):" or "blog.posts(id, name):")
-        // Updated to support dot notation in row syntax keys
-        const rowMatch = line.content.match(/^([a-zA-Z_$][-a-zA-Z0-9_$]*(?:\.[a-zA-Z_$][-a-zA-Z0-9_$]*)*)\s*\(\s*([^)]+)\s*\)\s*:\s*$/);
-        if (rowMatch) {
-            const key = rowMatch[1].trim();
-            const columns = rowMatch[2].split(',').map(col => col.trim());
-            this.currentLine++;
-
-            // Parse rows with the same or greater indentation
-            const rows = [];
-            while (this.currentLine < this.lines.length) {
-                const nextLine = this.lines[this.currentLine];
-
-                // Skip empty lines and comments
-                if (!nextLine.content || nextLine.content.startsWith('#')) {
-                    this.currentLine++;
-                    continue;
-                }
-
-                if (nextLine.indent <= expectedIndent) break;
-
-                if (nextLine.content.trim().startsWith('-')) {
-                    const rowText = nextLine.content.substring(nextLine.content.indexOf('-') + 1).trim();
-                    const rowValues = this.parseRowValues(rowText);
-
-                    // Validate row value count in strict mode
-                    if (this.strict && rowValues.length > columns.length) {
-                        this.error(`Row has ${rowValues.length} values but header defines ${columns.length} columns`);
-                    }
-
-                    const row = {};
-                    columns.forEach((col, idx) => {
-                        row[col] = idx < rowValues.length ? rowValues[idx] : null;
-                    });
-                    rows.push(row);
-                    this.currentLine++;
-                } else {
-                    break;
-                }
-            }
-
-            // Handle dot notation in row syntax keys
-            if (key.includes('.')) {
-                const keys = key.split('.');
-                let result = rows;
-
-                // Create nested objects for dot notation keys
-                for (let i = keys.length - 1; i >= 0; i--) {
-                    const currentKey = keys[i];
-                    result = { [currentKey]: result };
-                }
-
-                return result;
-            }
-
-            return { [key]: rows };
-        }
-
-        // Handle key-value pair (including dot notation and special characters in keys)
-        // Updated regex to properly handle dots in keys
-        const kvMatch = line.content.match(/^([a-zA-Z_$][-a-zA-Z0-9_$]*(?:\.[a-zA-Z_$][-a-zA-Z0-9_$]*)*)\s*:\s*(.*)$/);
-        if (!kvMatch) {
-            this.error('Expected key-value pair or row syntax');
-        }
-
-        const key = kvMatch[1].trim();
-        const valueText = kvMatch[2].trim();
-        this.currentLine++;
-
-        // Parse the value
-        let value;
-        if (valueText) {
-            value = this.parseValue(valueText);
-        } else {
-            // Handle multi-line value
-            const nextLine = this.lines[this.currentLine];
-            if (nextLine && nextLine.indent > expectedIndent) {
-                if (nextLine.content.trim().startsWith('-')) {
-                    value = this.parseList(expectedIndent + 1);
-                } else {
-                    value = this.parseObject(expectedIndent + 1);
-                }
-            } else {
-                value = null;
-            }
-        }
-
-        // Handle dot notation in keys by creating nested objects
-        if (key.includes('.')) {
-            const keys = key.split('.');
-            let result = value;
-
-            // Create nested objects for dot notation keys
-            for (let i = keys.length - 1; i >= 0; i--) {
-                const currentKey = keys[i];
-                result = { [currentKey]: result };
-            }
-
-            return result;
-        }
-
-        return { [key]: value };
+    peek() {
+        return this.tokens[this.pos];
     }
 
-    /**
-     * Parse an object (collection of key-value pairs)
-     */
-    parseObject(expectedIndent) {
-        const result = {};
-
-        while (this.currentLine < this.lines.length) {
-            const line = this.lines[this.currentLine];
-
-            // Skip empty lines and comments
-            if (!line.content || line.content.startsWith('#')) {
-                this.currentLine++;
-                continue;
-            }
-
-            if (line.indent < expectedIndent) break;
-            if (line.indent > expectedIndent) {
-                this.error('Unexpected indentation increase');
-            }
-
-            const item = this.parseItem(expectedIndent);
-            if (item) {
-                this.mergeIntoResult(result, item);
-            }
-        }
-
-        return result;
+    advance() {
+        this.pos++;
     }
 
-    /**
-     * Parse a list (items starting with -)
-     */
-    parseList(expectedIndent) {
-        const result = [];
-
-        while (this.currentLine < this.lines.length) {
-            const line = this.lines[this.currentLine];
-
-            if (!line.content || line.content.startsWith('#')) {
-                this.currentLine++;
-                continue;
-            }
-
-            if (line.indent < expectedIndent) {
-                break;
-            }
-
-            if (line.indent > expectedIndent) {
-                // In row syntax, we allow indentation for better readability
-                if (!line.content.trim().startsWith('-')) {
-                    break;
-                }
-            }
-
-            if (!line.content.trim().startsWith('-')) {
-                break;
-            }
-
-            const itemText = line.content.substring(line.content.indexOf('-') + 1).trim();
-            this.currentLine++;
-
-            // Check if this is a nested object or array
-            if (this.currentLine < this.lines.length &&
-                this.lines[this.currentLine].indent > expectedIndent) {
-                // Check if the next line is a key-value pair (indented with a key)
-                const nextLine = this.lines[this.currentLine];
-                const kvMatch = nextLine.content.match(/^\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/);
-
-                if (kvMatch) {
-                    // It's a nested object
-                    const obj = this.parseObject(expectedIndent + 1);
-                    result.push(obj);
-                } else if (nextLine.content.trim().startsWith('-')) {
-                    // It's a nested list
-                    const list = this.parseList(expectedIndent + 1);
-                    result.push(list);
-                } else {
-                    // Simple value after dash
-                    const value = this.parseValue(itemText);
-                    result.push(value);
-                }
-            } else {
-                // It's a simple value
-                const value = this.parseValue(itemText);
-                result.push(value);
-            }
+    consume(type) {
+        if (this.peek().type === type) {
+            const token = this.peek();
+            this.advance();
+            return token;
         }
-
-        return result;
-    }
-
-    /**
-     * Parse comma-separated row values
-     */
-    parseRowValues(text) {
-        if (!text) return [];
-
-        const values = [];
-        let current = '';
-        let inQuotes = false;
-        let escaped = false;
-
-        for (let i = 0; i < text.length; i++) {
-            const char = text[i];
-
-            if (escaped) {
-                current += this.unescapeChar(char);
-                escaped = false;
-                continue;
-            }
-
-            if (char === '\\' && inQuotes) {
-                escaped = true;
-                continue;
-            }
-
-            if (char === '"') {
-                inQuotes = !inQuotes;
-                continue;
-            }
-
-            if (char === ',' && !inQuotes) {
-                values.push(this.parseValue(current.trim()));
-                current = '';
-                continue;
-            }
-
-            current += char;
-        }
-
-        if (current.trim()) {
-            values.push(this.parseValue(current.trim()));
-        }
-
-        return values;
-    }
-
-    /**
-     * Parse a single value
-     */
-    parseValue(text) {
-        if (!text) return null;
-
-        // Handle inline comments
-        const commentIndex = text.indexOf(' #');
-        if (commentIndex !== -1) {
-            text = text.substring(0, commentIndex).trim();
-            if (!text) return null;
-        }
-
-        // Quoted string
-        if (text.startsWith('"') && text.endsWith('"')) {
-            return this.parseQuotedString(text);
-        }
-
-        // Boolean
-        if (text === 'true') return true;
-        if (text === 'false') return false;
-
-        // Null
-        if (text === 'null') return null;
-
-        // Number
-        if (/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(text)) {
-            return parseFloat(text);
-        }
-
-        // Unquoted string
-        return text;
-    }
-
-    /**
-     * Parse quoted string with escape sequences
-     */
-    parseQuotedString(text) {
-        let result = '';
-        let escaped = false;
-
-        // Remove surrounding quotes
-        text = text.slice(1, -1);
-
-        for (let i = 0; i < text.length; i++) {
-            const char = text[i];
-
-            if (escaped) {
-                result += this.unescapeChar(char);
-                escaped = false;
-                continue;
-            }
-
-            if (char === '\\') {
-                escaped = true;
-                continue;
-            }
-
-            result += char;
-        }
-
-        return result;
-    }
-
-    /**
-     * Unescape character
-     */
-    unescapeChar(char) {
-        const escapes = {
-            'n': '\n',
-            'r': '\r',
-            't': '\t',
-            '\\': '\\',
-            '"': '"'
-        };
-        return escapes[char] || char;
-    }
-
-    /**
-     * Throw error with line information
-     */
-    error(message, lineNum = null) {
-        const line = lineNum !== null ? lineNum : this.lines[this.currentLine]?.number || 'unknown';
-        throw new Error(`LEAN Parse Error at line ${line}: ${message}`);
+        throw new Error(`Expected ${type} but found ${this.peek().type} at line ${this.peek().line}`);
     }
 }

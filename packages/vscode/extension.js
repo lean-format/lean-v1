@@ -1,109 +1,104 @@
 const vscode = require('vscode');
 
+// Import LEAN core library for parsing, formatting, and validation
+const { parse, format, validate } = require('@lean/core');
+
 function activate(context) {
     console.log('LEAN format extension is now active');
 
     // Register formatting provider
     const formatProvider = vscode.languages.registerDocumentFormattingEditProvider('lean', {
         provideDocumentFormattingEdits(document) {
-            const edits = [];
-            const text = document.getText();
-            
-            // Basic auto-formatting logic
-            const lines = text.split('\n');
-            let formatted = [];
-            let expectedIndent = 0;
-            
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                const trimmed = line.trim();
-                
-                // Skip empty lines and comments
-                if (!trimmed || trimmed.startsWith('#')) {
-                    formatted.push(line);
-                    continue;
-                }
-                
-                // Detect indentation level
-                const currentIndent = line.match(/^(\s*)/)[1].length;
-                
-                // Format the line with proper indentation
-                const indent = '  '.repeat(expectedIndent);
-                formatted.push(indent + trimmed);
-                
-                // Adjust expected indent for next line
-                if (trimmed.endsWith(':')) {
-                    expectedIndent++;
-                } else if (trimmed.startsWith('-')) {
-                    // Keep same indent
-                } else if (currentIndent === 0 && expectedIndent > 0) {
-                    expectedIndent = 0;
-                }
+            try {
+                const text = document.getText();
+
+                // Parse LEAN content to validate syntax
+                const parsed = parse(text);
+
+                // Format it back to LEAN with proper indentation
+                const formatted = format(parsed, {
+                    indent: '  ',
+                    useRowSyntax: true
+                });
+
+                // Create edit to replace entire document
+                const fullRange = new vscode.Range(
+                    document.positionAt(0),
+                    document.positionAt(text.length)
+                );
+
+                return [vscode.TextEdit.replace(fullRange, formatted)];
+            } catch (error) {
+                // Show error message but don't throw to avoid VS Code error dialog
+                vscode.window.showErrorMessage(`LEAN format error: ${error.message}`);
+                return [];
             }
-            
-            const fullRange = new vscode.Range(
-                document.positionAt(0),
-                document.positionAt(text.length)
-            );
-            
-            edits.push(vscode.TextEdit.replace(fullRange, formatted.join('\n')));
-            return edits;
         }
     });
 
-    // Register commands
+    // Register validation command
     const validateCommand = vscode.commands.registerCommand('lean.validate', () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor) return;
-        
+
         const document = editor.document;
         if (document.languageId !== 'lean') {
             vscode.window.showWarningMessage('This command only works with LEAN files');
             return;
         }
-        
-        // Basic validation
-        const text = document.getText();
-        const lines = text.split('\n');
-        let errors = [];
-        
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            const trimmed = line.trim();
-            
-            if (!trimmed || trimmed.startsWith('#')) continue;
-            
-            // Check for mixed indentation
-            const spaces = line.match(/^( *)/)[1].length;
-            const tabs = line.match(/^(\t*)/)[1].length;
-            
-            if (spaces > 0 && tabs > 0) {
-                errors.push({
-                    line: i + 1,
-                    message: 'Mixed spaces and tabs'
-                });
+
+        try {
+            const text = document.getText();
+            const result = validate(text, { strict: false });
+
+            if (result.valid) {
+                vscode.window.showInformationMessage('✓ LEAN file is valid');
+            } else {
+                // Format errors for display
+                const errorMessages = result.errors.map(err =>
+                    `Line ${err.line || '?'}: ${err.message}`
+                ).join('\n');
+                vscode.window.showErrorMessage(`Validation errors:\n${errorMessages}`);
             }
-        }
-        
-        if (errors.length === 0) {
-            vscode.window.showInformationMessage('✓ LEAN file is valid');
-        } else {
-            const message = errors.map(e => `Line ${e.line}: ${e.message}`).join('\n');
-            vscode.window.showErrorMessage(`Validation errors:\n${message}`);
+        } catch (error) {
+            vscode.window.showErrorMessage(`Validation error: ${error.message}`);
         }
     });
 
-    const convertToJsonCommand = vscode.commands.registerCommand('lean.convertToJson', () => {
+    // Register convert to JSON command
+    const convertToJsonCommand = vscode.commands.registerCommand('lean.convertToJson', async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor) return;
-        
-        vscode.window.showInformationMessage('Use the LEAN CLI tool to convert to JSON: lean parse file.lean');
+
+        const document = editor.document;
+        if (document.languageId !== 'lean') {
+            vscode.window.showWarningMessage('This command only works with LEAN files');
+            return;
+        }
+
+        try {
+            const text = document.getText();
+            const result = parse(text);
+
+            // Pretty-print JSON
+            const json = JSON.stringify(result, null, 2);
+
+            // Create new document with JSON content
+            const jsonDoc = await vscode.workspace.openTextDocument({
+                language: 'json',
+                content: json
+            });
+
+            await vscode.window.showTextDocument(jsonDoc);
+        } catch (error) {
+            vscode.window.showErrorMessage(`Conversion error: ${error.message}`);
+        }
     });
 
     context.subscriptions.push(formatProvider, validateCommand, convertToJsonCommand);
 }
 
-function deactivate() {}
+function deactivate() { }
 
 module.exports = {
     activate,

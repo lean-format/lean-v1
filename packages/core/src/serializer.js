@@ -27,6 +27,16 @@ function flattenObject(obj, prefix = '') {
     }, {});
 }
 
+export class LeanSerializer {
+    constructor(options = {}) {
+        this.options = options;
+    }
+
+    serialize(obj) {
+        return toLean(obj, this.options);
+    }
+}
+
 export function toLean(obj, options = {}) {
     // Default options with row syntax enabled by default
     const {
@@ -42,7 +52,11 @@ export function toLean(obj, options = {}) {
         if (typeof value === 'number') return value.toString();
         if (typeof value === 'string') {
             // Only quote if necessary
-            if (/[\s,:\[\]\{\}]/.test(value) || value === 'true' || value === 'false' || value === 'null') {
+            // Quote if:
+            // - Contains whitespace, comma, colon, brackets, braces, hash
+            // - Starts with digit or hyphen (could be confused with number)
+            // - Is a keyword (true, false, null)
+            if (/[\s,:\[\]\{\}#]/.test(value) || /^[0-9-]/.test(value) || value === 'true' || value === 'false' || value === 'null') {
                 return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
             }
             return value;

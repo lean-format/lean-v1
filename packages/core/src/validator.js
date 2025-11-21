@@ -12,9 +12,19 @@ import { LeanParser } from './parser.js';
  * @param {Object} options - Validation options
  * @returns {Object} { valid: boolean, errors: Array<{line, message}> }
  */
+export class LeanValidator {
+  constructor(options = {}) {
+    this.options = options;
+  }
+
+  validate(input) {
+    return validate(input, this.options);
+  }
+}
+
 export function validate(input, options = {}) {
   const errors = [];
-  
+
   try {
     const parser = new LeanParser(options);
     parser.parse(input);

@@ -65,9 +65,6 @@
       }
     }
   },
-  "activationEvents": [
-    "onLanguage:lean"
-  ],
   "main": "./extension.js",
   "scripts": {
     "package": "vsce package",
@@ -76,5 +73,8 @@
   "devDependencies": {
     "@types/vscode": "^1.80.0",
     "vsce": "^2.15.0"
+  },
+  "dependencies": {
+    "@lean/core": "^1.0.0"
   }
 }

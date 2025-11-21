@@ -18,6 +18,29 @@ try {
 const { parse, format, validate: validateInput } = coreModule;
 
 // ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Read content from stdin
+ * @returns {Promise<string>} Content from stdin
+ */
+function readStdin() {
+    return new Promise((resolve, reject) => {
+        let data = '';
+
+        process.stdin.setEncoding('utf8');
+        process.stdin.on('data', chunk => {
+            data += chunk;
+        });
+        process.stdin.on('end', () => {
+            resolve(data);
+        });
+        process.stdin.on('error', reject);
+    });
+}
+
+// ============================================================================
 // CLI FUNCTIONS
 // ============================================================================
 
@@ -51,11 +74,17 @@ OPTIONS:
 EXAMPLES:
   lean parse data.lean                    # Parse to JSON (stdout)
   lean parse data.lean --output=out.json  # Parse to file
+  cat data.lean | lean parse              # Parse from stdin
   lean format data.json --output=out.lean # Format as LEAN
+  echo '{"name":"Alice"}' | lean format   # Format from stdin
   lean convert input.lean output.json     # Auto-convert
   lean validate data.lean --strict        # Validate with strict mode
   lean watch data.lean                    # Auto-convert on changes
   lean init sample                        # Create sample.lean
+  
+  # Unix piping examples:
+  cat data.lean | lean parse | jq .name   # Parse and extract field
+  curl api.com/data | lean format         # Format API response
 
 MORE INFO:
   Repository: https://github.com/lean-format/lean-js
@@ -64,51 +93,71 @@ MORE INFO:
 `);
 }
 
-function parseFile(filepath, options) {
+async function parseFile(filepath, options) {
     try {
-        const content = fs.readFileSync(filepath, 'utf8');
+        let content;
+
+        // Read from stdin if no filepath provided
+        if (!filepath) {
+            content = await readStdin();
+        } else {
+            content = fs.readFileSync(filepath, 'utf8');
+        }
+
         const result = parse(content, { strict: options.strict });
-        
-        const output = options.pretty 
+
+        const output = options.pretty
             ? JSON.stringify(result, null, 2)
             : JSON.stringify(result);
-        
+
         if (options.output) {
             fs.writeFileSync(options.output, output);
             if (!options.quiet) {
-                console.log(`✓ Parsed ${filepath} → ${options.output}`);
+                const source = filepath || 'stdin';
+                console.log(`✓ Parsed ${source} → ${options.output}`);
             }
         } else {
             console.log(output);
         }
     } catch (error) {
-        console.error(`✗ Error parsing ${filepath}:`);
+        const source = filepath || 'stdin';
+        console.error(`✗ Error parsing ${source}:`);
         console.error(`  ${error.message}`);
         process.exit(1);
     }
 }
 
-function formatFile(filepath, options) {
+async function formatFile(filepath, options) {
     try {
-        const content = fs.readFileSync(filepath, 'utf8');
+        let content;
+
+        // Read from stdin if no filepath provided
+        if (!filepath) {
+            content = await readStdin();
+        } else {
+            content = fs.readFileSync(filepath, 'utf8');
+        }
+
         const obj = JSON.parse(content);
-        
+
         const indent = options.indent === 'tab' ? '\t' : ' '.repeat(parseInt(options.indent || 2));
         const result = format(obj, {
             indent,
             useRowSyntax: options.useRowSyntax !== false
         });
-        
+
         if (options.output) {
             fs.writeFileSync(options.output, result);
             if (!options.quiet) {
-                console.log(`✓ Formatted ${filepath} → ${options.output}`);
+                const source = filepath || 'stdin';
+                console.log(`✓ Formatted ${source} → ${options.output}`);
             }
         } else {
             console.log(result);
         }
     } catch (error) {
-        console.error(`✗ Error formatting ${filepath}:`);
+        const source = filepath || 'stdin';
+        console.error(`✗ Error formatting ${source}:`);
         console.error(`  ${error.message}`);
         process.exit(1);
     }
@@ -117,7 +166,7 @@ function formatFile(filepath, options) {
 function convertFile(input, output, options) {
     const inputExt = path.extname(input).toLowerCase();
     const outputExt = path.extname(output).toLowerCase();
-    
+
     if (inputExt === '.lean' && outputExt === '.json') {
         parseFile(input, { ...options, output, pretty: true });
     } else if (inputExt === '.json' && outputExt === '.lean') {
@@ -134,7 +183,7 @@ function validateFile(filepath, options) {
     try {
         const content = fs.readFileSync(filepath, 'utf8');
         const result = validateInput(content, { strict: options.strict });
-        
+
         if (result.valid) {
             console.log(`✓ ${filepath} is valid LEAN format`);
             if (options.strict) {
@@ -154,37 +203,49 @@ function validateFile(filepath, options) {
     }
 }
 
+
 function watchFile(filepath, options) {
+    const chokidar = require('chokidar');
+
     console.log(`👀 Watching ${filepath} for changes...`);
     console.log('   Press Ctrl+C to stop');
-    
+
     const ext = path.extname(filepath).toLowerCase();
     const outputExt = ext === '.lean' ? '.json' : '.lean';
     const outputFile = filepath.replace(new RegExp(`${ext.replace('.', '\\.')}$`), outputExt);
-    
-    let timeout;
-    fs.watch(filepath, (eventType) => {
-        if (eventType === 'change') {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => {
-                try {
-                    if (ext === '.lean') {
-                        parseFile(filepath, { ...options, output: outputFile, pretty: true, quiet: true });
-                    } else {
-                        formatFile(filepath, { ...options, output: outputFile, quiet: true });
-                    }
-                    console.log(`✓ ${new Date().toLocaleTimeString()} - Converted ${filepath} → ${outputFile}`);
-                } catch (error) {
-                    console.error(`✗ ${new Date().toLocaleTimeString()} - Error: ${error.message}`);
-                }
-            }, 100);
+
+    // Create watcher with chokidar for better cross-platform support
+    const watcher = chokidar.watch(filepath, {
+        persistent: true,
+        ignoreInitial: true,
+        awaitWriteFinish: {
+            stabilityThreshold: 100,
+            pollInterval: 50
         }
+    });
+
+    watcher.on('change', async () => {
+        try {
+            if (ext === '.lean') {
+                await parseFile(filepath, { ...options, output: outputFile, pretty: true, quiet: true });
+            } else {
+                await formatFile(filepath, { ...options, output: outputFile, quiet: true });
+            }
+            console.log(`✓ ${new Date().toLocaleTimeString()} - Converted ${filepath} → ${outputFile}`);
+        } catch (error) {
+            console.error(`✗ ${new Date().toLocaleTimeString()} - Error: ${error.message}`);
+        }
+    });
+
+    watcher.on('error', error => {
+        console.error(`✗ Watcher error: ${error.message}`);
     });
 }
 
+
 function initFile(name = 'sample') {
     const filename = name.endsWith('.lean') ? name : `${name}.lean`;
-    
+
     const sample = `# Sample LEAN file
 # This demonstrates the LEAN format features
 
@@ -232,7 +293,7 @@ config:
             console.error(`✗ File ${filename} already exists`);
             process.exit(1);
         }
-        
+
         fs.writeFileSync(filename, sample);
         console.log(`✓ Created ${filename}`);
         console.log(`\nTry these commands:`);
@@ -249,14 +310,14 @@ config:
 // CLI ENTRY POINT
 // ============================================================================
 
-function main() {
+async function main() {
     const args = process.argv.slice(2);
-    
+
     if (args.length === 0 || args[0] === 'help' || args[0] === '--help') {
         showHelp();
         return;
     }
-    
+
     // Parse options
     const options = {
         strict: false,
@@ -266,9 +327,9 @@ function main() {
         indent: '2',
         output: null
     };
-    
+
     const files = [];
-    
+
     for (const arg of args) {
         if (arg.startsWith('--')) {
             const [key, value] = arg.substring(2).split('=');
@@ -282,28 +343,38 @@ function main() {
             files.push(arg);
         }
     }
-    
+
     const command = files.shift();
-    
+
     switch (command) {
         case 'parse':
-            if (files.length === 0) {
+            // Support stdin: if no file provided and stdin is available
+            if (files.length === 0 && !process.stdin.isTTY) {
+                await parseFile(null, options);
+            } else if (files.length === 0) {
                 console.error('✗ Error: No input file specified');
                 console.error('  Usage: lean parse <file.lean>');
+                console.error('  Or pipe input: cat file.lean | lean parse');
                 process.exit(1);
+            } else {
+                await parseFile(files[0], options);
             }
-            parseFile(files[0], options);
             break;
-            
+
         case 'format':
-            if (files.length === 0) {
+            // Support stdin: if no file provided and stdin is available
+            if (files.length === 0 && !process.stdin.isTTY) {
+                await formatFile(null, options);
+            } else if (files.length === 0) {
                 console.error('✗ Error: No input file specified');
                 console.error('  Usage: lean format <file.json>');
+                console.error('  Or pipe input: cat file.json | lean format');
                 process.exit(1);
+            } else {
+                await formatFile(files[0], options);
             }
-            formatFile(files[0], options);
             break;
-            
+
         case 'convert':
             if (files.length < 2) {
                 console.error('✗ Error: Input and output files required');
@@ -312,7 +383,7 @@ function main() {
             }
             convertFile(files[0], files[1], options);
             break;
-            
+
         case 'validate':
             if (files.length === 0) {
                 console.error('✗ Error: No input file specified');
@@ -321,7 +392,7 @@ function main() {
             }
             validateFile(files[0], options);
             break;
-            
+
         case 'watch':
             if (files.length === 0) {
                 console.error('✗ Error: No input file specified');
@@ -330,11 +401,11 @@ function main() {
             }
             watchFile(files[0], options);
             break;
-            
+
         case 'init':
             initFile(files[0]);
             break;
-            
+
         default:
             console.error(`✗ Unknown command: ${command}`);
             console.error('  Run "lean help" for usage information');

@@ -11,8 +11,11 @@
     "packages/website"
   ],
   "scripts": {
-    "build": "npm run build -w @lean/core && npm run build -w @lean/cli",
-    "test": "npm test -w @lean/core",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "npm run build && changeset publish",
     "test:parser": "node packages/core/__tests__/parser.test.js",
     "lint": "npm run lint -w @lean/core",
     "dev:playground": "npm run dev -w @lean/playground",
@@ -29,7 +32,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/lean-format/lean-v1.git"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.7"
   }
 }
-
-

@@ -3,7 +3,7 @@
  * Comprehensive tests for LEAN parser and serializer
  */
 
-import {format as toLean, parse as parseLean} from '../src/index.js';
+import { format as toLean, parse as parseLean } from '../src/index.js';
 
 function assertEqual(actual, expected, message = '') {
     if (JSON.stringify(actual) !== JSON.stringify(expected)) {
@@ -32,61 +32,68 @@ describe('LEAN Parser', () => {
     it('Parse unquoted string', () => {
         const lean = 'name: Alice';
         const result = parseLean(lean);
-        assertEqual(result, {name: 'Alice'});
+        assertEqual(result, { name: 'Alice' });
+    });
+
+    it('Parse inline comment', () => {
+        const lean = 'name: Alice # This is Alice';
+        const result = parseLean(lean);
+        // The parser should strip the comment and return the value before it
+        assertEqual(result, { name: 'Alice' });
     });
 
     it('Parse quoted string', () => {
         const lean = 'message: "Hello, world!"';
         const result = parseLean(lean);
-        assertEqual(result, {message: 'Hello, world!'});
+        assertEqual(result, { message: 'Hello, world!' });
     });
 
     it('Parse string with escaped quotes', () => {
         const lean = 'quote: "She said \\"hello\\""';
         const result = parseLean(lean);
-        assertEqual(result, {quote: 'She said "hello"'});
+        assertEqual(result, { quote: 'She said "hello"' });
     });
 
     it('Parse integer', () => {
         const lean = 'age: 30';
         const result = parseLean(lean);
-        assertEqual(result, {age: 30});
+        assertEqual(result, { age: 30 });
     });
 
     it('Parse negative integer', () => {
         const lean = 'temp: -5';
         const result = parseLean(lean);
-        assertEqual(result, {temp: -5});
+        assertEqual(result, { temp: -5 });
     });
 
     it('Parse float', () => {
         const lean = 'price: 19.99';
         const result = parseLean(lean);
-        assertEqual(result, {price: 19.99});
+        assertEqual(result, { price: 19.99 });
     });
 
     it('Parse scientific notation', () => {
         const lean = 'large: 1.5e10';
         const result = parseLean(lean);
-        assertEqual(result, {large: 1.5e10});
+        assertEqual(result, { large: 1.5e10 });
     });
 
     it('Parse boolean true', () => {
         const lean = 'active: true';
         const result = parseLean(lean);
-        assertEqual(result, {active: true});
+        assertEqual(result, { active: true });
     });
 
     it('Parse boolean false', () => {
         const lean = 'deleted: false';
         const result = parseLean(lean);
-        assertEqual(result, {deleted: false});
+        assertEqual(result, { deleted: false });
     });
 
     it('Parse null', () => {
         const lean = 'value: null';
         const result = parseLean(lean);
-        assertEqual(result, {value: null});
+        assertEqual(result, { value: null });
     });
 
     // ============================================================================
@@ -145,7 +152,7 @@ city: Boston
     it('Parse empty object', () => {
         const lean = 'user:';
         const result = parseLean(lean);
-        assertEqual(result, {user: null});
+        assertEqual(result, { user: null });
     });
 
     // ============================================================================
@@ -201,8 +208,8 @@ users(name, age):
         const result = parseLean(lean);
         assertEqual(result, {
             users: [
-                {name: 'Alice', age: 30},
-                {name: 'Bob', age: 25}
+                { name: 'Alice', age: 30 },
+                { name: 'Bob', age: 25 }
             ]
         });
     });
@@ -210,7 +217,7 @@ users(name, age):
     it('Parse empty list', () => {
         const lean = 'items:';
         const result = parseLean(lean);
-        assertEqual(result, {items: null});
+        assertEqual(result, { items: null });
     });
 
     // ============================================================================
@@ -226,8 +233,8 @@ users(id, name, age):
         const result = parseLean(lean);
         assertEqual(result, {
             users: [
-                {id: 1, name: 'Alice', age: 30},
-                {id: 2, name: 'Bob', age: 25}
+                { id: 1, name: 'Alice', age: 30 },
+                { id: 2, name: 'Bob', age: 25 }
             ]
         });
     });
@@ -241,8 +248,8 @@ products(id, name):
         const result = parseLean(lean);
         assertEqual(result, {
             products: [
-                {id: 1, name: 'Super Widget'},
-                {id: 2, name: 'Mega Gadget'}
+                { id: 1, name: 'Super Widget' },
+                { id: 2, name: 'Mega Gadget' }
             ]
         });
     });
@@ -257,9 +264,9 @@ records(id, name, age):
         const result = parseLean(lean);
         assertEqual(result, {
             records: [
-                {id: 1, name: 'Alice', age: 30},
-                {id: 2, name: 'Bob', age: null},
-                {id: 3, name: 'Casey', age: 28}
+                { id: 1, name: 'Alice', age: 30 },
+                { id: 2, name: 'Bob', age: null },
+                { id: 3, name: 'Casey', age: 28 }
             ]
         });
     });
@@ -273,8 +280,8 @@ data(str, num, bool, nul):
         const result = parseLean(lean);
         assertEqual(result, {
             data: [
-                {str: 'hello', num: 42, bool: true, nul: null},
-                {str: 'world', num: 3.14, bool: false, nul: null}
+                { str: 'hello', num: 42, bool: true, nul: null },
+                { str: 'world', num: 3.14, bool: false, nul: null }
             ]
         });
     });
@@ -289,9 +296,9 @@ ids(value):
         const result = parseLean(lean);
         assertEqual(result, {
             ids: [
-                {value: 1},
-                {value: 2},
-                {value: 3}
+                { value: 1 },
+                { value: 2 },
+                { value: 3 }
             ]
         });
     });
@@ -299,7 +306,7 @@ ids(value):
     it('Parse empty row list', () => {
         const lean = 'users(id, name):';
         const result = parseLean(lean);
-        assertEqual(result, {users: []});
+        assertEqual(result, { users: [] });
     });
 
     it('Parse row with commas in quoted strings', () => {
@@ -311,8 +318,8 @@ items(id, desc):
         const result = parseLean(lean);
         assertEqual(result, {
             items: [
-                {id: 1, desc: 'Item, with comma'},
-                {id: 2, desc: 'Another, item'}
+                { id: 1, desc: 'Item, with comma' },
+                { id: 2, desc: 'Another, item' }
             ]
         });
     });
@@ -351,8 +358,8 @@ store:
             store: {
                 name: 'TechShop',
                 products: [
-                    {id: 1, name: 'Widget'},
-                    {id: 2, name: 'Gadget'}
+                    { id: 1, name: 'Widget' },
+                    { id: 2, name: 'Gadget' }
                 ]
             }
         });
@@ -379,13 +386,13 @@ blog:
                 title: 'My Blog',
                 tags: ['tech', 'coding'],
                 posts: [
-                    {id: 1, title: 'First Post'},
-                    {id: 2, title: 'Second Post'}
+                    { id: 1, title: 'First Post' },
+                    { id: 2, title: 'Second Post' }
                 ],
                 comments: [
-                    {postId: 1, user: 'Alice', text: 'Great!'},
-                    {postId: 1, user: 'Bob', text: 'Nice'},
-                    {postId: 2, user: 'Casey', text: 'Interesting'}
+                    { postId: 1, user: 'Alice', text: 'Great!' },
+                    { postId: 1, user: 'Bob', text: 'Nice' },
+                    { postId: 2, user: 'Casey', text: 'Interesting' }
                 ]
             }
         });
@@ -401,21 +408,21 @@ blog:
 name: Alice
 `;
         const result = parseLean(lean);
-        assertEqual(result, {name: 'Alice'});
+        assertEqual(result, { name: 'Alice' });
     });
 
     it('Parse inline comment', () => {
         const lean = 'name: Alice # This is Alice';
         const result = parseLean(lean);
         // The parser should strip the comment and return the value before it
-        assertEqual(result, {name: 'Alice'});
+        assertEqual(result, { name: 'Alice' });
     });
 
     it('Parse value with hash but not a comment', () => {
         const lean = 'name: Alice#NotAComment';
         const result = parseLean(lean);
         // The hash is part of the value since it's not preceded by a space
-        assertEqual(result, {name: 'Alice#NotAComment'});
+        assertEqual(result, { name: 'Alice#NotAComment' });
     });
 
     it('Parse multiple comments', () => {
@@ -427,7 +434,7 @@ age: 30
 # End comment
 `;
         const result = parseLean(lean);
-        assertEqual(result, {name: 'Alice', age: 30});
+        assertEqual(result, { name: 'Alice', age: 30 });
     });
 
     // ============================================================================
@@ -442,7 +449,7 @@ user:
 `;
         const result = parseLean(lean);
         assertEqual(result, {
-            user: {name: 'Alice', age: 30}
+            user: { name: 'Alice', age: 30 }
         });
     });
 
@@ -454,7 +461,7 @@ user:
 `;
         const result = parseLean(lean);
         assertEqual(result, {
-            user: {name: 'Alice', age: 30}
+            user: { name: 'Alice', age: 30 }
         });
     });
 
@@ -462,7 +469,7 @@ user:
         const lean = "user:\n\tname: Alice\n\tage: 30";
         const result = parseLean(lean);
         assertEqual(result, {
-            user: {name: 'Alice', age: 30}
+            user: { name: 'Alice', age: 30 }
         });
     });
 
@@ -519,7 +526,7 @@ users(id, name):
     - 1, Alice, extra
 `;
         assertThrows(
-            () => parseLean(lean, {strict: true}),
+            () => parseLean(lean, { strict: true }),
             'Row has 3 values but header defines 2 columns'
         );
     });
@@ -536,7 +543,7 @@ name: Bob
         //     'Duplicate key: name'
         // );
         // Instead, just verify it doesn't throw with the current implementation
-        const result = parseLean(lean, {strict: true});
+        const result = parseLean(lean, { strict: true });
         assertEqual(result, { name: 'Bob' }); // Last value wins
     });
 
@@ -545,7 +552,7 @@ name: Bob
     // ============================================================================
 
     it('Round-trip: simple object', () => {
-        const obj = {name: 'Alice', age: 30};
+        const obj = { name: 'Alice', age: 30 };
         const lean = toLean(obj);
         const parsed = parseLean(lean);
         // Order of properties might differ, so we'll check each property
@@ -561,7 +568,7 @@ name: Bob
         };
         const lean = toLean(obj);
         const parsed = parseLean(lean);
-        
+
         // The parsed result should have nested structure
         const expected = {
             user: {
@@ -581,7 +588,7 @@ name: Bob
         };
         const lean = toLean(obj);
         const parsed = parseLean(lean);
-        
+
         // The parsed result should match our object
         expect(parsed).toMatchObject(obj);
     });
@@ -590,14 +597,14 @@ name: Bob
         // The formatter uses row syntax for arrays of objects with the same keys
         const obj = {
             users: [
-                {id: 1, name: 'Alice', age: 30},
-                {id: 2, name: 'Bob', age: 25},
-                {id: 3, name: 'Casey', age: 28}
+                { id: 1, name: 'Alice', age: 30 },
+                { id: 2, name: 'Bob', age: 25 },
+                { id: 3, name: 'Casey', age: 28 }
             ]
         };
         const lean = toLean(obj);
         const parsed = parseLean(lean);
-        
+
         // The parsed result should match our object
         expect(parsed.users).toHaveLength(3);
         expect(parsed.users[0]).toMatchObject(obj.users[0]);
@@ -612,15 +619,15 @@ name: Bob
             'blog.author': 'Alice',
             'blog.tags': ['tech', 'coding'],
             'blog.posts': [
-                {id: 1, title: 'First Post', date: '2025-01-15'},
-                {id: 2, title: 'Second Post', date: '2025-02-01'},
-                {id: 3, title: 'Third Post', date: '2025-02-15'}
+                { id: 1, title: 'First Post', date: '2025-01-15' },
+                { id: 2, title: 'Second Post', date: '2025-02-01' },
+                { id: 3, title: 'Third Post', date: '2025-02-15' }
             ]
         };
-        
+
         const lean = toLean(obj);
         const parsed = parseLean(lean);
-        
+
         // The parsed result should have nested structure
         const expected = {
             blog: {
@@ -628,9 +635,9 @@ name: Bob
                 author: 'Alice',
                 tags: ['tech', 'coding'],
                 posts: [
-                    {id: 1, title: 'First Post', date: '2025-01-15'},
-                    {id: 2, title: 'Second Post', date: '2025-02-01'},
-                    {id: 3, title: 'Third Post', date: '2025-02-15'}
+                    { id: 1, title: 'First Post', date: '2025-01-15' },
+                    { id: 2, title: 'Second Post', date: '2025-02-01' },
+                    { id: 3, title: 'Third Post', date: '2025-02-15' }
                 ]
             }
         };
@@ -644,9 +651,9 @@ name: Bob
     it('toLean: use row syntax by default', () => {
         const obj = {
             users: [
-                {id: 1, name: 'Alice'},
-                {id: 2, name: 'Bob'},
-                {id: 3, name: 'Casey'}
+                { id: 1, name: 'Alice' },
+                { id: 2, name: 'Bob' },
+                { id: 3, name: 'Casey' }
             ]
         };
         const lean = toLean(obj);
@@ -659,12 +666,12 @@ name: Bob
     it('toLean: disable row syntax', () => {
         const obj = {
             users: [
-                {id: 1, name: 'Alice'},
-                {id: 2, name: 'Bob'},
-                {id: 3, name: 'Casey'}
+                { id: 1, name: 'Alice' },
+                { id: 2, name: 'Bob' },
+                { id: 3, name: 'Casey' }
             ]
         };
-        const lean = toLean(obj, {useRowSyntax: false});
+        const lean = toLean(obj, { useRowSyntax: false });
         const hasRowSyntax = lean.includes('users(id, name):');
         if (hasRowSyntax) {
             throw new Error('Should not use row syntax when disabled');
@@ -674,11 +681,11 @@ name: Bob
     it('toLean: respect row threshold', () => {
         const obj = {
             users: [
-                {id: 1, name: 'Alice'},
-                {id: 2, name: 'Bob'}
+                { id: 1, name: 'Alice' },
+                { id: 2, name: 'Bob' }
             ]
         };
-        const lean = toLean(obj, {rowThreshold: 3});
+        const lean = toLean(obj, { rowThreshold: 3 });
         const hasRowSyntax = lean.includes('users(id, name):');
         if (hasRowSyntax) {
             throw new Error('Should not use row syntax below threshold');
@@ -707,30 +714,30 @@ name: Bob
     it('Parse key with special characters', () => {
         const lean = 'user_name: Alice';
         const result = parseLean(lean);
-        assertEqual(result, {user_name: 'Alice'});
+        assertEqual(result, { user_name: 'Alice' });
     });
 
     it('Parse key with hyphen', () => {
         const lean = 'user-id: 42';
         const result = parseLean(lean);
-        assertEqual(result, {'user-id': 42});
+        assertEqual(result, { 'user-id': 42 });
     });
 
     it('Parse key with dollar sign', () => {
         const lean = '$special: value';
         const result = parseLean(lean);
-        assertEqual(result, {$special: 'value'});
+        assertEqual(result, { $special: 'value' });
     });
 
     it('Parse value that looks like keyword', () => {
         const lean = 'word: true';
         const result = parseLean(lean);
-        assertEqual(result, {word: true});
+        assertEqual(result, { word: true });
     });
 
     it('Parse string that looks like number', () => {
         const lean = 'code: "123"';
         const result = parseLean(lean);
-        assertEqual(result, {code: '123'});
+        assertEqual(result, { code: '123' });
     });
 });

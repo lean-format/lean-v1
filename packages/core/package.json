@@ -4,7 +4,15 @@
   "description": "LEAN (Lightweight Efficient Adaptive Notation) - A minimal, human-readable data interchange format",
   "main": "src/index.js",
   "module": "src/index.js",
+  "types": "src/index.d.ts",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    }
+  },
   "scripts": {
     "build": "rollup -c",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
@@ -40,6 +48,7 @@
   },
   "homepage": "https://leanformat.org",
   "files": [
+    "src",
     "dist",
     "README.md"
   ],
