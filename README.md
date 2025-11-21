@@ -1,6 +1,6 @@
 # LEAN Format
 
-[![npm version](https://badge.fury.io/js/lean-format.svg)](https://www.npmjs.com/package/lean-format)
+[![npm version](https://badge.fury.io/js/lean-format.svg)](https://www.npmjs.com/package/@lean-format/core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **LEAN** (Lightweight Efficient Adaptive Notation) is a minimal, human-readable data interchange format that combines the flexibility of JSON with the compactness of tabular data.
