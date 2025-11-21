@@ -12,7 +12,8 @@ let coreModule;
 try {
     coreModule = require('@lean-format/core');
 } catch (error) {
-    coreModule = require('../../core/src');
+    // Fallback to built CommonJS version in monorepo
+    coreModule = require('../../core/dist/index.js');
 }
 
 const { parse, format, validate: validateInput } = coreModule;
