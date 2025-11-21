@@ -5,7 +5,7 @@ Command-line interface for the LEAN (Lightweight Efficient Adaptive Notation) da
 ## Installation
 
 ```bash
-npm install -g @lean/cli
+npm install -g @lean-format/cli
 ```
 
 ## Usage
@@ -99,9 +99,9 @@ lean watch config.lean
 
 ## Learn More
 
-- [LEAN Format Specification](https://github.com/lean-format/lean-v1/blob/main/SPECIFICATION.md)
+- [LEAN Format Specification](https://github.com/lean-format/lean-v1/blob/restruct/SPECIFICATION.md)
 - [Report Issues](https://github.com/lean-format/lean-v1/issues)
-- [Website](https://leanformat.org)
+- [Website](https://lean-format.github.io/lean-v1/)
 
 ## License
 

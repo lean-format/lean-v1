@@ -1,5 +1,5 @@
 {
-  "name": "@lean/cli",
+  "name": "@lean-format/cli",
   "version": "1.0.0",
   "author": "LEAN Format Team",
   "license": "MIT",
@@ -34,7 +34,7 @@
   "bugs": {
     "url": "https://github.com/lean-format/lean-v1/issues"
   },
-  "homepage": "https://leanformat.org",
+  "homepage": "https://lean-format.github.io/lean-v1/",
   "keywords": [
     "lean",
     "cli",
