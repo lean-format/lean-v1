@@ -1,5 +1,5 @@
 {
-    "name": "@lean-format",
+    "name": "lean-format",
     "version": "1.0.1",
     "description": "LEAN Format - A minimal, human-readable data interchange format (meta package)",
     "main": "index.js",

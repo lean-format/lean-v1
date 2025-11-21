@@ -1,11 +1,11 @@
-# @lean-format
+# lean-format
 
 Meta package for LEAN Format - A minimal, human-readable data interchange format.
 
 ## Quick Install
 
 ```bash
-npm install @lean-format
+npm install lean-format
 ```
 
 This package is a convenience wrapper that installs `@lean-format/core`. Both packages provide the same functionality.
@@ -20,7 +20,7 @@ LEAN (Lightweight Efficient Adaptive Notation) is a data format that's:
 ## Usage
 
 ```javascript
-import { parse, format } from '@lean-format';
+import { parse, format } from 'lean-format';
 
 // Parse LEAN to JavaScript
 const data = parse(`

@@ -1,5 +1,5 @@
 {
-  "name": "lean-format",
+  "name": "@lean-format/vscode",
   "displayName": "LEAN Format Support",
   "description": "Syntax highlighting and language support for LEAN (Lightweight Efficient Adaptive Notation) format",
   "version": "1.0.0",
@@ -76,6 +76,6 @@
     "vsce": "^2.15.0"
   },
   "dependencies": {
-    "@lean/core": "^1.0.0"
+    "@lean-format/core": "^1.0.0"
   }
 }
