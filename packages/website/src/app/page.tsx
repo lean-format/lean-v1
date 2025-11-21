@@ -88,9 +88,9 @@ export default function Page() {
                     <div className="logo">
                         <span>
                             <svg width="30" height="20" viewBox="0 0 30 30">
-                                <rect x="0" y="6" width="37" height="3" fill="white" rx="2"/>
-                                <rect x="0" y="16" width="28" height="3" fill="white" rx="2" opacity="0.8"/>
-                                <rect x="0" y="26" width="16" height="3" fill="white" rx="2" opacity="0.6"/>
+                                <rect x="0" y="6" width="37" height="3" fill="white" rx="2" />
+                                <rect x="0" y="16" width="28" height="3" fill="white" rx="2" opacity="0.8" />
+                                <rect x="0" y="26" width="16" height="3" fill="white" rx="2" opacity="0.6" />
                             </svg>
                         </span>
                         <span>LEAN</span>
@@ -100,7 +100,7 @@ export default function Page() {
                         <li><a href="#examples">Examples</a></li>
                         <li><a href="#install">Install</a></li>
                         <li><a href="#docs">Docs</a></li>
-                        <li><a href="https://github.com/lean-format/lean-js" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+                        <li><a href="https://github.com/lean-format/lean-v1" target="_blank" rel="noopener noreferrer">GitHub</a></li>
                     </ul>
                     <div className="nav-actions">
                         <Link href="/playground" className="btn btn-outline">Try Playground</Link>
@@ -278,57 +278,57 @@ export default function Page() {
                 <div className="comparison">
                     <table>
                         <thead>
-                        <tr>
-                            <th>Feature</th>
-                            <th>JSON</th>
-                            <th>YAML</th>
-                            <th>CSV</th>
-                            <th>LEAN</th>
-                        </tr>
+                            <tr>
+                                <th>Feature</th>
+                                <th>JSON</th>
+                                <th>YAML</th>
+                                <th>CSV</th>
+                                <th>LEAN</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        <tr>
-                            <td>Human-readable</td>
-                            <td><span className="partial">⚠️ Verbose</span></td>
-                            <td><span className="check">✓ Excellent</span></td>
-                            <td><span className="partial">⚠️ Limited</span></td>
-                            <td><span className="check">✓ Excellent</span></td>
-                        </tr>
-                        <tr>
-                            <td>Compact rows</td>
-                            <td><span className="cross">✗ No</span></td>
-                            <td><span className="cross">✗ No</span></td>
-                            <td><span className="check">✓ Yes</span></td>
-                            <td><span className="check">✓ Yes</span></td>
-                        </tr>
-                        <tr>
-                            <td>Nested objects</td>
-                            <td><span className="check">✓ Yes</span></td>
-                            <td><span className="check">✓ Yes</span></td>
-                            <td><span className="cross">✗ No</span></td>
-                            <td><span className="check">✓ Yes</span></td>
-                        </tr>
-                        <tr>
-                            <td>No key repetition</td>
-                            <td><span className="cross">✗ No</span></td>
-                            <td><span className="cross">✗ No</span></td>
-                            <td><span className="check">✓ Yes</span></td>
-                            <td><span className="check">✓ Yes</span></td>
-                        </tr>
-                        <tr>
-                            <td>Comments</td>
-                            <td><span className="cross">✗ No</span></td>
-                            <td><span className="check">✓ Yes</span></td>
-                            <td><span className="cross">✗ No</span></td>
-                            <td><span className="check">✓ Yes</span></td>
-                        </tr>
-                        <tr>
-                            <td>Easy to parse</td>
-                            <td><span className="check">✓ Easy</span></td>
-                            <td><span className="partial">⚠️ Complex</span></td>
-                            <td><span className="check">✓ Easy</span></td>
-                            <td><span className="check">✓ Easy</span></td>
-                        </tr>
+                            <tr>
+                                <td>Human-readable</td>
+                                <td><span className="partial">⚠️ Verbose</span></td>
+                                <td><span className="check">✓ Excellent</span></td>
+                                <td><span className="partial">⚠️ Limited</span></td>
+                                <td><span className="check">✓ Excellent</span></td>
+                            </tr>
+                            <tr>
+                                <td>Compact rows</td>
+                                <td><span className="cross">✗ No</span></td>
+                                <td><span className="cross">✗ No</span></td>
+                                <td><span className="check">✓ Yes</span></td>
+                                <td><span className="check">✓ Yes</span></td>
+                            </tr>
+                            <tr>
+                                <td>Nested objects</td>
+                                <td><span className="check">✓ Yes</span></td>
+                                <td><span className="check">✓ Yes</span></td>
+                                <td><span className="cross">✗ No</span></td>
+                                <td><span className="check">✓ Yes</span></td>
+                            </tr>
+                            <tr>
+                                <td>No key repetition</td>
+                                <td><span className="cross">✗ No</span></td>
+                                <td><span className="cross">✗ No</span></td>
+                                <td><span className="check">✓ Yes</span></td>
+                                <td><span className="check">✓ Yes</span></td>
+                            </tr>
+                            <tr>
+                                <td>Comments</td>
+                                <td><span className="cross">✗ No</span></td>
+                                <td><span className="check">✓ Yes</span></td>
+                                <td><span className="cross">✗ No</span></td>
+                                <td><span className="check">✓ Yes</span></td>
+                            </tr>
+                            <tr>
+                                <td>Easy to parse</td>
+                                <td><span className="check">✓ Easy</span></td>
+                                <td><span className="partial">⚠️ Complex</span></td>
+                                <td><span className="check">✓ Easy</span></td>
+                                <td><span className="check">✓ Easy</span></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -393,7 +393,7 @@ console.log(lean);`}
                         <h3>Specification</h3>
                         <p>Complete format specification with grammar and rules, including syntax, data types, and best practices.</p>
                         <a
-                            href="https://github.com/lean-format/lean-js#readme"
+                            href="https://github.com/lean-format/lean-v1/blob/main/SPECIFICATION.md"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn btn-outline"
@@ -406,7 +406,7 @@ console.log(lean);`}
                         <h3>API Reference</h3>
                         <p>Documentation for parse(), format(), and validate() functions with all available options.</p>
                         <a
-                            href="https://github.com/lean-format/lean-js#api-reference"
+                            href="https://github.com/lean-format/lean-v1/blob/main/docs/API_INTEGRATION.md"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn btn-outline"
@@ -430,9 +430,9 @@ console.log(lean);`}
                     <div className="footer-brand">
                         <div className="logo">
                             <svg width="30" height="20" viewBox="0 0 30 30">
-                                <rect x="0" y="6" width="37" height="3" fill="white" rx="2"/>
-                                <rect x="0" y="16" width="28" height="3" fill="white" rx="2" opacity="0.8"/>
-                                <rect x="0" y="26" width="16" height="3" fill="white" rx="2" opacity="0.6"/>
+                                <rect x="0" y="6" width="37" height="3" fill="white" rx="2" />
+                                <rect x="0" y="16" width="28" height="3" fill="white" rx="2" opacity="0.8" />
+                                <rect x="0" y="26" width="16" height="3" fill="white" rx="2" opacity="0.6" />
                             </svg>
                             <span>LEAN Format</span>
                         </div>
@@ -448,17 +448,17 @@ console.log(lean);`}
                         </div>
                         <div className="footer-section">
                             <h4>Tools</h4>
-                            <a href="https://www.npmjs.com/package/lean-format">NPM Package</a>
-                            <a href="https://github.com/lean-format/lean-js">CLI Tool</a>
-                            <a href="#">VS Code Extension</a>
-                            <a href="#">Online Converter</a>
+                            <a href="https://www.npmjs.com/package/@lean/core" target="_blank" rel="noopener noreferrer">NPM Package</a>
+                            <a href="https://github.com/lean-format/lean-v1/tree/main/packages/cli" target="_blank" rel="noopener noreferrer">CLI Tool</a>
+                            <a href="https://github.com/lean-format/lean-v1/tree/main/packages/vscode" target="_blank" rel="noopener noreferrer">VS Code Extension</a>
+                            <Link href="/playground">Online Converter</Link>
                         </div>
                         <div className="footer-section">
                             <h4>Community</h4>
-                            <a href="https://github.com/lean-format/lean-js">GitHub</a>
-                            <a href="#">Discord</a>
-                            <a href="#">Twitter</a>
-                            <a href="#">Stack Overflow</a>
+                            <a href="https://github.com/lean-format/lean-v1" target="_blank" rel="noopener noreferrer">GitHub</a>
+                            <a href="https://github.com/lean-format/lean-v1/discussions" target="_blank" rel="noopener noreferrer">Discussions</a>
+                            <a href="https://twitter.com/leanformat" target="_blank" rel="noopener noreferrer">Twitter</a>
+                            <a href="https://stackoverflow.com/questions/tagged/lean-format" target="_blank" rel="noopener noreferrer">Stack Overflow</a>
                         </div>
                     </div>
                 </div>
