@@ -2,6 +2,7 @@
 const nextConfig = {
   output: 'export',
   basePath: process.env.NODE_ENV === 'production' ? '/lean-v1' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/lean-v1/' : '',
   images: {
     unoptimized: true,
   },

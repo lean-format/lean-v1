@@ -1,0 +1,258 @@
+{
+    "info": {
+        "name": "LEAN Format API Examples",
+        "description": "Example API requests using LEAN format for payloads and responses",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "version": "1.0.0"
+    },
+    "item": [
+        {
+            "name": "Create User",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/lean",
+                        "type": "text"
+                    },
+                    {
+                        "key": "Accept",
+                        "value": "application/lean",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "name: Alice Johnson\nemail: alice@example.com\nage: 30\nroles:\n  - admin\n  - user\npreferences:\n  theme: dark\n  notifications: true"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/users",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "users"
+                    ]
+                },
+                "description": "Create a new user with LEAN format payload"
+            },
+            "response": []
+        },
+        {
+            "name": "Get User (Responds with LEAN)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Accept",
+                        "value": "application/lean",
+                        "type": "text"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/api/users/1",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "users",
+                        "1"
+                    ]
+                },
+                "description": "Get user data in LEAN format"
+            },
+            "response": [
+                {
+                    "name": "Success Response",
+                    "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "1"
+                            ]
+                        }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "_postman_previewlanguage": "plain",
+                    "header": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/lean"
+                        }
+                    ],
+                    "body": "id: 1\nname: Alice Johnson\nemail: alice@example.com\nage: 30\nroles:\n  - admin\n  - user\ncreated_at: 2024-11-21T18:00:00Z"
+                }
+            ]
+        },
+        {
+            "name": "Update Configuration",
+            "request": {
+                "method": "PUT",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/lean"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "# Application Configuration\napp.name: \"My API Service\"\napp.version: 2.0.0\napp.debug: false\n\ndatabase:\n  host: localhost\n  port: 5432\n  pool.max: 10\n  pool.min: 2\n\nfeatures:\n  - authentication\n  - rate-limiting\n  - caching"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/config",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "config"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Batch Create Orders (Row Syntax)",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/lean"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "customer_id: 12345\nshipping:\n  address: \"123 Main St\"\n  city: Springfield\n  zip: 12345\n  method: express\n\n# Order items in row syntax\nitems(sku, name, quantity, price):\n  - ABC123, \"Widget Pro\", 2, 29.99\n  - XYZ789, \"Gadget Plus\", 1, 49.99\n  - DEF456, \"Tool Set\", 3, 19.99\n\nmetadata:\n  source: mobile_app\n  campaign: summer_sale"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/orders",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "orders"
+                    ]
+                },
+                "description": "Create order with items in efficient row syntax"
+            },
+            "response": []
+        },
+        {
+            "name": "Export Data (Table Format)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Accept",
+                        "value": "application/lean"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/api/reports/sales?format=lean",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "reports",
+                        "sales"
+                    ],
+                    "query": [
+                        {
+                            "key": "format",
+                            "value": "lean"
+                        }
+                    ]
+                }
+            },
+            "response": [
+                {
+                    "name": "Sales Report",
+                    "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/reports/sales",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "reports",
+                                "sales"
+                            ]
+                        }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "_postman_previewlanguage": "plain",
+                    "header": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/lean"
+                        }
+                    ],
+                    "body": "report_name: Q4 2024 Sales\ngenerated: 2024-11-21T18:00:00Z\n\nsales(date, product, quantity, revenue):\n  - 2024-11-01, Widget Pro, 150, 4498.50\n  - 2024-11-02, Gadget Plus, 89, 4449.11\n  - 2024-11-03, Tool Set, 234, 4677.66\n\ntotals:\n  quantity: 473\n  revenue: 13625.27"
+                }
+            ]
+        },
+        {
+            "name": "Webhook Payload Example",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/lean"
+                    },
+                    {
+                        "key": "X-Webhook-Signature",
+                        "value": "{{webhookSignature}}"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "event: user.created\ntimestamp: 2024-11-21T18:00:00Z\nid: evt_12345\n\ndata:\n  user_id: 789\n  email: newuser@example.com\n  plan: premium\n  \nprevious:\n  plan: free"
+                },
+                "url": {
+                    "raw": "{{webhookUrl}}",
+                    "host": [
+                        "{{webhookUrl}}"
+                    ]
+                },
+                "description": "Example webhook event in LEAN format"
+            },
+            "response": []
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000",
+            "type": "string"
+        },
+        {
+            "key": "webhookUrl",
+            "value": "https://webhook.site/your-endpoint",
+            "type": "string"
+        },
+        {
+            "key": "webhookSignature",
+            "value": "sha256=...",
+            "type": "string"
+        }
+    ]
+}

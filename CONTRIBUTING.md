@@ -39,8 +39,8 @@ By participating in this project, you agree to abide by our [Code of Conduct](CO
 ### Local Development
 ```bash
 # Fork and clone the repository
-git clone https://github.com/YOUR_USERNAME/lean-js.git
-cd lean-js
+git clone https://github.com/lean-format/lean-v1.git
+cd lean-v1
 
 # Install dependencies
 npm install

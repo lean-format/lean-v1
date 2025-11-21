@@ -3,11 +3,12 @@
   "displayName": "LEAN Format Support",
   "description": "Syntax highlighting and language support for LEAN (Lightweight Efficient Adaptive Notation) format",
   "version": "1.0.0",
+  "author": "LEAN Format Team",
   "publisher": "lean-format",
   "icon": "images/icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lean-format/vscode-lean"
+    "url": "https://github.com/lean-format/lean-v1.git"
   },
   "license": "MIT",
   "engines": {

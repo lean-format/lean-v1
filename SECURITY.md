@@ -59,4 +59,4 @@ We appreciate and recognize security researchers who help us keep LEAN Format se
 
 ---
 
-*Last updated: {DATE}*
+*Last updated: November 2025*

@@ -41,10 +41,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lean-format/lean-js.git"
+    "url": "https://github.com/lean-format/lean-v1.git"
   },
   "bugs": {
-    "url": "https://github.com/lean-format/lean-js/issues"
+    "url": "https://github.com/lean-format/lean-v1/issues"
   },
   "homepage": "https://leanformat.org",
   "files": [

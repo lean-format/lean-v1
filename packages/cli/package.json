@@ -1,6 +1,7 @@
 {
   "name": "@lean/cli",
   "version": "1.0.0",
+  "author": "LEAN Format Team",
   "license": "MIT",
   "description": "Command line interface for the LEAN data format",
   "bin": {
@@ -25,5 +26,21 @@
     "eslint": "^8.42.0",
     "jest": "^29.7.0",
     "rollup": "^3.25.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lean-format/lean-v1.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lean-format/lean-v1/issues"
+  },
+  "homepage": "https://leanformat.org",
+  "keywords": [
+    "lean",
+    "cli",
+    "format",
+    "parser",
+    "data",
+    "converter"
+  ]
 }
