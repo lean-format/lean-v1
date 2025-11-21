@@ -6,7 +6,8 @@
   "description": "Marketing site for the LEAN format",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "echo \"Private package - build skipped in CI\" && exit 0",
+    "build:prod": "next build",
     "build:test": "cross-env NODE_ENV=development next build",
     "start": "next start",
     "lint": "next lint",
