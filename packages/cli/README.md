@@ -1,4 +1,4 @@
-# @lean/cli
+# @lean-format/cli
 
 Command-line interface for the LEAN (Lightweight Efficient Adaptive Notation) data format.
 

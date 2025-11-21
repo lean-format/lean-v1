@@ -77,7 +77,7 @@ curl api.example.com/data.json | lean format | tee output.lean
 ### TypeScript Support
 
 ```typescript
-import { parse, format, validate } from '@lean/core';
+import { parse, format, validate } from '@lean-format/core';
 
 const leanText = 'name: Alice\nage: 30';
 const data = parse(leanText); // Full type inference

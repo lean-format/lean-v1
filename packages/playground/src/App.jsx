@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import { parse, format } from '@lean/core';
+import { parse, format } from '@lean-format/core';
 import './styles.css';
 
 const DEFAULT_LEAN = `users(id, name, email, age):

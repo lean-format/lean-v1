@@ -15,7 +15,7 @@ export default {
     }),
     babel({ babelHelpers: 'bundled' })
   ],
-  external: ['fs', 'path', '@lean/core']
+  external: ['fs', 'path', '@lean-format/core']
 };
 
 

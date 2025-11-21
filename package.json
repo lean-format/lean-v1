@@ -18,7 +18,7 @@
     "version": "changeset version",
     "release": "npm run build && changeset publish",
     "test:parser": "node packages/core/__tests__/parser.test.js",
-    "lint": "npm run lint -w @lean/core",
+    "lint": "npm run lint -w @lean-format/core",
     "dev:playground": "npm run dev -w @lean/playground",
     "dev:website": "npm run dev -w @lean/website"
   },

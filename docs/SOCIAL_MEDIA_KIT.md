@@ -94,7 +94,7 @@ Anywhere you use JSON/YAML, LEAN does it better.
 **Tweet 6/10**
 Full Ecosystem Ready to Use:
 
-📦 npm: @lean/core, @lean/cli
+📦 npm: @lean-format/core, @lean-format/cli
 💻 VS Code extension with syntax highlighting
 ⌨️ TypeScript support with full type definitions
 🧪 94% test coverage (175 tests)
@@ -103,7 +103,7 @@ Full Ecosystem Ready to Use:
 
 Try now:
 ```bash
-npm install -g @lean/cli
+npm install -g @lean-format/cli
 ```
 
 ---
@@ -158,7 +158,7 @@ Getting Started is Easy:
 
 1️⃣ Install CLI
 ```bash
-npm i -g @lean/cli
+npm i -g @lean-format/cli
 ```
 
 2️⃣ Try it out
@@ -168,7 +168,7 @@ echo 'name: Alice\nage: 30' | lean parse
 
 3️⃣ Use in your code
 ```javascript
-import { parse } from '@lean/core';
+import { parse } from '@lean-format/core';
 const data = parse('name: Alice');
 ```
 
@@ -188,7 +188,7 @@ Open Source & Community Driven
 Your feedback matters!
 
 🌐 https://leanformat.org
-📦 npm install @lean/core
+📦 npm install @lean-format/core
 ⭐ Star us on GitHub!
 
 Let's make data formats human again! 
@@ -255,7 +255,7 @@ users(id, name, role):
 
 ```bash
 # Install CLI
-npm install -g @lean/cli
+npm install -g @lean-format/cli
 
 # Parse LEAN to JSON
 echo 'name: Alice\nage: 30' | lean parse
@@ -277,7 +277,7 @@ echo '{"name":"Bob","age":25}' | lean format
 - **GitHub**: https://github.com/lean-format/lean-v1
 - **Website**: https://leanformat.org
 - **Spec**: [Link to SPECIFICATION.md]
-- **npm**: @lean/core, @lean/cli
+- **npm**: @lean-format/core, @lean-format/cli
 
 I'd love to hear your thoughts, feedback, and questions!
 
@@ -323,7 +323,7 @@ items(sku, qty, price):
 
 Express.js example:
 ```javascript
-import { parse, format } from '@lean/core';
+import { parse, format } from '@lean-format/core';
 import express from 'express';
 
 app.use(express.text({ type: 'application/lean' }));
@@ -344,7 +344,7 @@ app.post('/api/orders', (req, res) => {
 - TypeScript support
 - VS Code extension
 
-**Try it**: npm install @lean/core
+**Try it**: npm install @lean-format/core
 
 More: https://leanformat.org
 
@@ -438,7 +438,7 @@ I built LEAN because I was tired of wrestling with JSON's verbosity and YAML's i
 
 LEAN gives you the clarity of well-formatted data without the pain. It's production-ready with 94% test coverage and a complete ecosystem.
 
-Try it: npm install -g @lean/cli
+Try it: npm install -g @lean-format/cli
 
 Would love your feedback!
 
