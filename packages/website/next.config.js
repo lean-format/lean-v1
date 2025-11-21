@@ -2,9 +2,10 @@
 const isProd = process.env.NODE_ENV === 'production'
 const isGitHubPages = process.env.GITHUB_PAGES === 'true'
 
+console.log('Build config:', { isProd, isGitHubPages, basePath: isGitHubPages ? '/lean-v1' : '' })
+
 const nextConfig = {
     output: 'export',
-    // Only use basePath when deploying to GitHub Pages
     basePath: isGitHubPages ? '/lean-v1' : '',
     assetPrefix: isGitHubPages ? '/lean-v1/' : '',
     images: {
