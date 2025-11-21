@@ -70,6 +70,7 @@
   "scripts": {
     "package": "vsce package",
     "publish": "vsce publish",
+    "build": "echo \"VS Code extension - no build step required\" && exit 0",
     "test": "echo \"VS Code extension - no automated tests\" && exit 0"
   },
   "devDependencies": {
