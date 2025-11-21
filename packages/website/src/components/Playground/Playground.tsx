@@ -4,21 +4,21 @@ import { useMemo, useState } from 'react';
 import { parse, format } from '@lean/core';
 
 const DEFAULT_LEAN = `users(id, name, email, age):
-    - 1, Alice, alice@example.com, 30
-    - 2, Bob, bob@example.com, 25
-    - 3, Casey, casey@example.com, 28`;
+    - 1, Alice, "alice@example.com", 30
+    - 2, Bob, "bob@example.com", 25
+    - 3, Casey, "casey@example.com", 28`;
 
 const EXAMPLES = {
     simple: `user:
     name: Alice
     age: 30
-    email: alice@example.com
+    email: "alice@example.com"
     active: true`,
 
     users: `users(id, name, email, age, active):
-    - 1, Alice, alice@example.com, 30, true
-    - 2, Bob, bob@example.com, 25, false
-    - 3, Casey, casey@example.com, 28, true`,
+    - 1, Alice, "alice@example.com", 30, true
+    - 2, Bob, "bob@example.com", 25, false
+    - 3, Casey, "casey@example.com", 28, true`,
 
     blog: `blog:
     title: "Tech Insights"
@@ -36,7 +36,7 @@ const EXAMPLES = {
     title: "My Blog"
     author:
         name: Alice
-        email: alice@example.com
+        email: "alice@example.com"
     posts(id, title, content):
         - 1, "First Post", "Hello, world!"
         - 2, "Second Post", "Another post"

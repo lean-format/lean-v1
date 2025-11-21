@@ -327,7 +327,7 @@ address:
 user:
     name: Alice
     contact:
-        email: alice@example.com
+        email: "alice@example.com"
         phone: "555-1234"
 ```
 
@@ -425,7 +425,7 @@ age: 30
 user:
     id: 42
     name: Alice
-    email: alice@example.com
+    email: "alice@example.com"
     active: true
 ```
 

@@ -15,8 +15,8 @@ Syntax highlighting and language support for LEAN (Lightweight Efficient Adaptiv
 ### Row Syntax (Compact Tables)
 ```lean
 users(id, name, email, age):
-    - 1, Alice, alice@example.com, 30
-    - 2, Bob, bob@example.com, 25
+    - 1, Alice, "alice@example.com", 30
+    - 2, Bob, "bob@example.com", 25
 ```
 
 ### Nested Objects
