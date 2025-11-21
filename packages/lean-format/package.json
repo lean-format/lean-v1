@@ -5,6 +5,9 @@
     "main": "index.js",
     "types": "index.d.ts",
     "type": "module",
+    "scripts": {
+        "test": "echo \"Meta package - tests run in @lean-format/core\" && exit 0"
+    },
     "author": "LEAN Format Team",
     "license": "MIT",
     "repository": {
