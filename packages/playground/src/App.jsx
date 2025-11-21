@@ -55,9 +55,7 @@ const EXAMPLES = {
         - 104, Dave, 3, 68000
     offices:
         - city: Boston
-          size: 5000
-        - city: "New York"
-          size: 8000`,
+        - size: 5000`,
 
     mixed: `dataset:
     name: "Sample Data"
