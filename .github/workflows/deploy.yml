@@ -44,6 +44,9 @@ jobs:
           echo "=== First 50 lines of index.html ==="
           head -50 out/index.html
 
+      - name: Add .nojekyll file
+        run: touch packages/website/out/.nojekyll
+
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
