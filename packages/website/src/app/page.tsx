@@ -393,7 +393,7 @@ console.log(lean);`}
                         <h3>Specification</h3>
                         <p>Complete format specification with grammar and rules, including syntax, data types, and best practices.</p>
                         <a
-                            href="https://github.com/lean-format/lean-v1/blob/main/SPECIFICATION.md"
+                            href="https://github.com/lean-format/lean-v1/blob/restruct/SPECIFICATION.md"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn btn-outline"
@@ -406,7 +406,7 @@ console.log(lean);`}
                         <h3>API Reference</h3>
                         <p>Documentation for parse(), format(), and validate() functions with all available options.</p>
                         <a
-                            href="https://github.com/lean-format/lean-v1/blob/main/docs/API_INTEGRATION.md"
+                            href="https://github.com/lean-format/lean-v1/blob/restruct/docs/API_INTEGRATION.md"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn btn-outline"

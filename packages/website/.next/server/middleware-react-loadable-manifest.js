@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST='{"app/playground/page.tsx -> @/components/Playground":{"id":4252,"files":["static/chunks/252.648b36bc5ef267ab.js"]}}';
+self.__REACT_LOADABLE_MANIFEST="{}"
