@@ -8,7 +8,8 @@
     "packages/cli",
     "packages/vscode",
     "packages/playground",
-    "packages/website"
+    "packages/website",
+    "packages/lean-format"
   ],
   "scripts": {
     "build": "npm run build --workspaces",
