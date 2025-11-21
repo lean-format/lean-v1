@@ -1,5 +1,5 @@
 {
-  "name": "@lean/core",
+  "name": "@lean-format/core",
   "version": "1.0.0",
   "description": "LEAN (Lightweight Efficient Adaptive Notation) - A minimal, human-readable data interchange format",
   "main": "src/index.js",
@@ -46,7 +46,7 @@
   "bugs": {
     "url": "https://github.com/lean-format/lean-v1/issues"
   },
-  "homepage": "https://leanformat.org",
+  "homepage": "https://lean-format.github.io/lean-v1/",
   "files": [
     "src",
     "dist",

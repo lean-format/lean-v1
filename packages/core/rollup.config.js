@@ -2,6 +2,17 @@ import resolve from '@rollup/plugin-node-resolve';
 import babel from '@rollup/plugin-babel';
 import terser from '@rollup/plugin-terser';
 
+const babelConfig = {
+  babelHelpers: 'bundled',
+  exclude: 'node_modules/**',
+  presets: [
+    ['@babel/preset-env', {
+      targets: { node: '12' },
+      modules: false  // Preserve ES6 modules for Rollup
+    }]
+  ]
+};
+
 export default [
   // CommonJS build
   {
@@ -13,7 +24,7 @@ export default [
     },
     plugins: [
       resolve(),
-      babel({ babelHelpers: 'bundled' })
+      babel(babelConfig)
     ]
   },
   // ES Module build
@@ -25,7 +36,7 @@ export default [
     },
     plugins: [
       resolve(),
-      babel({ babelHelpers: 'bundled' })
+      babel(babelConfig)
     ]
   },
   // UMD build (browser)
@@ -39,8 +50,9 @@ export default [
     },
     plugins: [
       resolve(),
-      babel({ babelHelpers: 'bundled' }),
+      babel(babelConfig),
       terser()
     ]
   },
 ];
+

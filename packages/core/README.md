@@ -1,8 +1,8 @@
 # LEAN Format
 
-[![npm version](https://badge.fury.io/js/lean-format.svg)](https://www.npmjs.com/package/lean-format)
+[![npm version](https://badge.fury.io/js/lean-format.svg)](https://www.npmjs.com/package/@lean-format/core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://github.com/lean-format/lean-js/workflows/Tests/badge.svg)](https://github.com/lean-format/lean-js/actions)
+[![Tests](https://github.com/lean-format/lean-js/workflows/Tests/badge.svg)](https://github.com/lean-format/lean-v1/actions)
 
 **LEAN** (Lightweight Efficient Adaptive Notation) is a minimal, human-readable data interchange format that combines the flexibility of JSON with the compactness of tabular data.
 
@@ -16,7 +16,7 @@
 ## 📦 Installation
 
 ```bash
-npm install lean-format
+npm install lean-format/core
 ```
 
 ## 🚀 Quick Start
@@ -283,10 +283,10 @@ const data = parse(input, { strict: true });
 
 ## 📚 Resources
 
-- [Full Specification](https://leanformat.org/spec)
-- [Online Playground](https://leanformat.org/playground)
+- [Full Specification](https://github.com/lean-format/lean-v1/blob/restruct/SPECIFICATION.md)
+- [Online Playground](https://lean-format.github.io/lean-v1/playground)
 - [VS Code Extension](https://marketplace.visualstudio.com/items?itemName=lean-format.lean-format)
-- [GitHub Repository](https://github.com/lean-format/lean-js)
+- [GitHub Repository](https://github.com/lean-format/lean-v1)
 
 ## 🤝 Contributing
 
