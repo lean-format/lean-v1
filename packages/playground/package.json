@@ -6,7 +6,7 @@
   "description": "Interactive playground for the LEAN format",
   "scripts": {
     "dev": "vite",
-    "build": "echo \"Private package - build skipped in CI\" && exit 0",
+    "build": "vite build",
     "build:prod": "vite build",
     "preview": "vite preview",
     "test": "echo \"UI package - no automated tests\" && exit 0"
