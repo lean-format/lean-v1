@@ -6,7 +6,8 @@
     "types": "index.d.ts",
     "type": "module",
     "scripts": {
-        "test": "echo \"Meta package - tests run in @lean-format/core\" && exit 0"
+        "test": "echo \"Meta package - tests run in @lean-format/core\" && exit 0",
+        "build": "echo \"Meta package - no build step required\" && exit 0"
     },
     "author": "LEAN Format Team",
     "license": "MIT",
