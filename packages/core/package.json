@@ -15,7 +15,7 @@
   },
   "scripts": {
     "build": "rollup -c",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "lint": "eslint src/**/*.js",
@@ -67,6 +67,7 @@
     "jest-jasmine2": "^30.2.0",
     "jsdoc": "^4.0.0",
     "prettier": "^2.8.0",
-    "rollup": "^3.25.0"
+    "rollup": "^3.25.0",
+    "cross-env": "^7.0.3"
   }
 }
