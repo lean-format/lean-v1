@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { parse, format } from '@lean-format/core';
+import logo from './assets/logo.png';
 import './styles.css';
 
 const DEFAULT_LEAN = `users(id, name, email, age):
@@ -330,13 +331,8 @@ export default function App() {
             <div className="container">
                 <header>
                     <h1>
-                        <span>
-                            <svg width="40" height="30" viewBox="0 0 30 30">
-                                <rect x="0" y="6" width="37" height="3" fill="white" rx="2" />
-                                <rect x="0" y="16" width="28" height="3" fill="white" rx="2" opacity="0.8" />
-                                <rect x="0" y="26" width="16" height="3" fill="white" rx="2" opacity="0.6" />
-                            </svg>
-                        </span> LEAN Playground
+                        <img src={logo} alt="LEAN Logo" height="50" style={{ marginRight: '15px' }} />
+                        LEAN Playground
                     </h1>
                     <p className="subtitle">Lightweight Efficient Adaptive Notation</p>
                 </header>
