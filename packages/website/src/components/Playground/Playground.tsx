@@ -131,28 +131,28 @@ export default function Playground() {
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif'
         }}>
             <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-                <h1 style={{ color: '#2d3748', marginBottom: '0.5rem' }}>LEAN Playground</h1>
+                <h1 style={{ color: '#2d3748', marginBottom: '0.5rem' }}>LEAN Playground Lite</h1>
                 <p style={{
                     fontSize: '0.9rem',
                     color: '#718096',
                     marginBottom: '1rem'
                 }}>
-                    Visit <a
-                    href="#"
-                    style={{
-                        color: '#3182ce',
-                        textDecoration: 'none',
-                        fontWeight: '500'
-                    }}
-                    onMouseOver={(e) => {
-                        e.currentTarget.style.textDecoration = 'underline';
-                    }}
-                    onMouseOut={(e) => {
-                        e.currentTarget.style.textDecoration = 'none';
-                    }}
-                >
-                    [Hosted Playground]
-                </a> for more playground functionality and insight
+                    Experience the full power of LEAN in our <a
+                        href="https://lean-format.github.io/lean-v1/playground/"
+                        style={{
+                            color: '#e53e3e',
+                            textDecoration: 'none',
+                            fontWeight: '500'
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.textDecoration = 'underline';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.textDecoration = 'none';
+                        }}
+                    >
+                        [Advanced Playground]
+                    </a>
                 </p>
                 <div style={{
                     display: 'flex',
