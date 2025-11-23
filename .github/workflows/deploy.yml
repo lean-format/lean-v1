@@ -23,26 +23,29 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: Install dependencies
+      - name: Install dependencies (Website)
         working-directory: packages/website
         run: npm install
 
-      - name: Build and export
+      - name: Build Website
         working-directory: packages/website
-        run: |
-          echo "GITHUB_PAGES=$GITHUB_PAGES"
-          npm run build
+        run: npm run build
         env:
           GITHUB_PAGES: 'true'
           NODE_ENV: 'production'
 
-      - name: Verify build output
-        working-directory: packages/website
+      - name: Install dependencies (Playground)
+        working-directory: packages/playground
+        run: npm install
+
+      - name: Build Playground
+        working-directory: packages/playground
+        run: npm run build
+
+      - name: Prepare Deployment
         run: |
-          echo "=== Checking CSS paths in HTML ==="
-          grep -o 'href="[^"]*\.css[^"]*"' out/index.html || echo "No CSS links found"
-          echo "=== First 50 lines of index.html ==="
-          head -50 out/index.html
+          mkdir -p packages/website/out/playground
+          cp -r packages/playground/dist/* packages/website/out/playground/
 
       - name: Add .nojekyll file
         run: touch packages/website/out/.nojekyll
