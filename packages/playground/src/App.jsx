@@ -53,9 +53,9 @@ const EXAMPLES = {
         - 102, Bob, 1, 87000
         - 103, Casey, 2, 72000
         - 104, Dave, 3, 68000
-    offices:
-        - city: Boston
-        - size: 5000`,
+    offices(city, size):
+        - Boston, 5000
+        - Alabama, 15000`,
 
     mixed: `dataset:
     name: "Sample Data"
@@ -89,10 +89,10 @@ const getTime = () => {
 };
 
 // Enhanced Compactness Indicator Component
-const CompactnessIndicator = ({ stats, type }) => {
+const CompactnessIndicator = ({ stats }) => {
     if (Math.abs(stats.compactness) < 1) return null;
 
-    const isPositive = type === 'lean' ? stats.isLeanMoreCompact : !stats.isLeanMoreCompact;
+    const isPositive = stats.isLeanMoreCompact;
     const efficiencyColors = {
         excellent: '#10b981',
         good: '#22c55e',
@@ -102,6 +102,7 @@ const CompactnessIndicator = ({ stats, type }) => {
     };
 
     const getEfficiencyText = () => {
+        if (!isPositive) return 'Less compact';
         const texts = {
             excellent: 'Highly efficient',
             good: 'Very efficient',
@@ -134,7 +135,7 @@ Overall: ${stats.compactness}% ${isPositive ? 'more compact' : 'less compact'}`}
                     {isPositive ? '↓' : '↑'}
                 </span>
                 {stats.compactness}%
-                <span className="efficiency-badge">{stats.efficiencyLevel}</span>
+                <span className="efficiency-badge">{isPositive ? stats.efficiencyLevel : 'bloated'}</span>
             </div>
         </div>
     );
@@ -166,7 +167,7 @@ export default function App() {
         // Weighted average favoring character reduction (more important for file size)
         const combinedReduction = (lineReduction * 0.3) + (charReduction * 0.7);
 
-        const isLeanMoreCompact = combinedReduction > 0;
+        const isLeanMoreCompact = combinedReduction < 0;
         const compactness = Math.abs(combinedReduction);
 
         // Determine efficiency level
@@ -331,9 +332,9 @@ export default function App() {
                     <h1>
                         <span>
                             <svg width="40" height="30" viewBox="0 0 30 30">
-                                <rect x="0" y="6" width="37" height="3" fill="white" rx="2"/>
-                                <rect x="0" y="16" width="28" height="3" fill="white" rx="2" opacity="0.8"/>
-                                <rect x="0" y="26" width="16" height="3" fill="white" rx="2" opacity="0.6"/>
+                                <rect x="0" y="6" width="37" height="3" fill="white" rx="2" />
+                                <rect x="0" y="16" width="28" height="3" fill="white" rx="2" opacity="0.8" />
+                                <rect x="0" y="26" width="16" height="3" fill="white" rx="2" opacity="0.6" />
                             </svg>
                         </span> LEAN Playground
                     </h1>
@@ -347,7 +348,7 @@ export default function App() {
                             <div className="stats">
                                 <span className="stat">{stats.leanLines} lines</span>
                                 <span className="stat">{stats.leanChars} chars</span>
-                                <CompactnessIndicator stats={stats} type="lean" />
+                                <CompactnessIndicator stats={stats} />
                             </div>
                         </div>
                         <div className="panel-content">
@@ -374,7 +375,6 @@ export default function App() {
                             <div className="stats">
                                 <span className="stat">{stats.jsonLines} lines</span>
                                 <span className="stat">{stats.jsonChars} chars</span>
-                                <CompactnessIndicator stats={stats} type="json" />
                             </div>
                         </div>
                         <div className="panel-content">
