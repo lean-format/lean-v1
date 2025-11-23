@@ -11,6 +11,9 @@ const nextConfig = {
     images: {
         unoptimized: true,
     },
+    env: {
+        NEXT_PUBLIC_BASE_PATH: isGitHubPages ? '/lean-v1' : '',
+    },
     reactStrictMode: false,
     trailingSlash: true,
     webpack: (config, { isServer }) => {

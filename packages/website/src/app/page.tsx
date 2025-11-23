@@ -86,7 +86,7 @@ export default function Page() {
             <header>
                 <nav>
                     <div className="logo">
-                        <img src="/logo.png" alt="LEAN Logo" height="30" style={{ marginRight: '10px' }} />
+                        <img src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/logo.png`} alt="LEAN Logo" height="30" style={{ marginRight: '10px' }} />
                         <span>LEAN</span>
                     </div>
                     <ul className="nav-links">
@@ -423,7 +423,7 @@ console.log(lean);`}
                 <div className="footer-content">
                     <div className="footer-brand">
                         <div className="logo">
-                            <img src="/logo.png" alt="LEAN Logo" height="30" style={{ marginRight: '10px' }} />
+                            <img src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/logo.png`} alt="LEAN Logo" height="30" style={{ marginRight: '10px' }} />
                             <span>LEAN Format</span>
                         </div>
                         <p>Lightweight Efficient Adaptive Notation for modern data serialization.</p>
