@@ -97,7 +97,7 @@ export default function Page() {
                         <li><a href="https://github.com/lean-format/lean-v1" target="_blank" rel="noopener noreferrer">GitHub</a></li>
                     </ul>
                     <div className="nav-actions">
-                        <Link href="/playground" className="btn btn-outline">Try Playground</Link>
+                        <Link href="/playground/lite" className="btn btn-outline">Try Playground</Link>
                     </div>
                 </nav>
             </header>
@@ -126,7 +126,7 @@ export default function Page() {
                     <div className="cta-buttons animate">
                         <a href="#install" className="btn btn-primary">Get Started</a>
                         <a href="#examples" className="btn btn-secondary">See Examples</a>
-                        <Link href="/playground" className="btn btn-outline">Try Playground</Link>
+                        <Link href="/playground/lite" className="btn btn-outline">Try Playground</Link>
                     </div>
                 </div>
                 <div className="hero-visual">
@@ -412,7 +412,7 @@ console.log(lean);`}
                         <div className="doc-icon">🎮</div>
                         <h3>Playground</h3>
                         <p>Try LEAN format interactively in your browser with real-time conversion and examples.</p>
-                        <Link href="/playground" className="btn btn-primary">
+                        <Link href="/playground/lite" className="btn btn-primary">
                             Open Playground
                         </Link>
                     </div>
@@ -434,14 +434,14 @@ console.log(lean);`}
                             <a href="#docs">Documentation</a>
                             <a href="#examples">Examples</a>
                             <a href="#install">Quick Start</a>
-                            <Link href="/playground">Playground</Link>
+                            <Link href="/playground/lite">Playground</Link>
                         </div>
                         <div className="footer-section">
                             <h4>Tools</h4>
                             <a href="https://www.npmjs.com/package/@lean-format/core" target="_blank" rel="noopener noreferrer">NPM Package</a>
                             <a href="https://www.npmjs.com/package/@lean-format/cli" target="_blank" rel="noopener noreferrer">CLI Tool</a>
                             <a href="https://marketplace.visualstudio.com/items?itemName=lean-format.lean-format" target="_blank" rel="noopener noreferrer">VS Code Extension</a>
-                            <Link href="/playground">Online Converter</Link>
+                            <Link href="/playground/lite">Online Converter</Link>
                         </div>
                         <div className="footer-section">
                             <h4>Community</h4>

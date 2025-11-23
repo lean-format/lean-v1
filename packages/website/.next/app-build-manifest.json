@@ -11,15 +11,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/page.js"
     ],
-    "/playground/layout": [
+    "/playground/lite/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/playground/layout.js"
+      "static/chunks/app/playground/lite/layout.js"
     ],
-    "/playground/page": [
+    "/playground/lite/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/playground/page.js"
+      "static/chunks/app/playground/lite/page.js"
     ]
   }
 }
