@@ -86,13 +86,7 @@ export default function Page() {
             <header>
                 <nav>
                     <div className="logo">
-                        <span>
-                            <svg width="30" height="20" viewBox="0 0 30 30">
-                                <rect x="0" y="6" width="37" height="3" fill="white" rx="2" />
-                                <rect x="0" y="16" width="28" height="3" fill="white" rx="2" opacity="0.8" />
-                                <rect x="0" y="26" width="16" height="3" fill="white" rx="2" opacity="0.6" />
-                            </svg>
-                        </span>
+                        <img src="/logo.png" alt="LEAN Logo" height="30" style={{ marginRight: '10px' }} />
                         <span>LEAN</span>
                     </div>
                     <ul className="nav-links">
@@ -429,11 +423,7 @@ console.log(lean);`}
                 <div className="footer-content">
                     <div className="footer-brand">
                         <div className="logo">
-                            <svg width="30" height="20" viewBox="0 0 30 30">
-                                <rect x="0" y="6" width="37" height="3" fill="white" rx="2" />
-                                <rect x="0" y="16" width="28" height="3" fill="white" rx="2" opacity="0.8" />
-                                <rect x="0" y="26" width="16" height="3" fill="white" rx="2" opacity="0.6" />
-                            </svg>
+                            <img src="/logo.png" alt="LEAN Logo" height="30" style={{ marginRight: '10px' }} />
                             <span>LEAN Format</span>
                         </div>
                         <p>Lightweight Efficient Adaptive Notation for modern data serialization.</p>

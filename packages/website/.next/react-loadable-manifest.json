@@ -1,8 +1,8 @@
 {
   "app/playground/page.tsx -> @/components/Playground": {
-    "id": 4252,
+    "id": "app/playground/page.tsx -> @/components/Playground",
     "files": [
-      "static/chunks/252.ee46c696b874a4f4.js"
+      "static/chunks/_app-pages-browser_src_components_Playground_index_ts.js"
     ]
   }
 }
