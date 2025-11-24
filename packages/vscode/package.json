@@ -1,5 +1,5 @@
 {
-  "name": "@lean-format/vscode",
+  "name": "lean-format-vscode",
   "displayName": "LEAN Format Support",
   "description": "Syntax highlighting and language support for LEAN (Lightweight Efficient Adaptive Notation) format",
   "version": "1.0.0",
@@ -26,6 +26,9 @@
     "notation",
     "syntax"
   ],
+  "activationEvents": [
+    "onLanguage:lean"
+  ],
   "contributes": {
     "languages": [
       {
@@ -39,8 +42,8 @@
         ],
         "configuration": "./language-configuration.json",
         "icon": {
-          "light": "./images/icon-light.svg",
-          "dark": "./images/icon-dark.svg"
+          "light": "./images/icon-light.png",
+          "dark": "./images/icon-dark.png"
         }
       }
     ],
@@ -66,18 +69,20 @@
       }
     }
   },
-  "main": "./extension.js",
+  "main": "./dist/extension.js",
   "scripts": {
-    "package": "vsce package",
-    "publish": "vsce publish",
-    "build": "echo \"VS Code extension - no build step required\" && exit 0",
+    "vscode:prepublish": "npm run package",
+    "compile": "node build.js",
+    "watch": "node build.js --watch",
+    "package": "npm run compile -- --production",
+    "package:vsix": "vsce package --no-dependencies",
+    "publish": "vsce publish --no-dependencies",
     "test": "echo \"VS Code extension - no automated tests\" && exit 0"
   },
   "devDependencies": {
     "@types/vscode": "^1.80.0",
-    "vsce": "^2.15.0"
-  },
-  "dependencies": {
+    "vsce": "^2.15.0",
+    "esbuild": "^0.24.0",
     "@lean-format/core": "^1.0.0"
   }
 }
