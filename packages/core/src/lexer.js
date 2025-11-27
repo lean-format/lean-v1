@@ -394,6 +394,6 @@ export class Lexer {
     }
 
     isIdentifierPart(char) {
-        return char === '#' || /[-a-zA-Z0-9_$.]/.test(char);
+        return char === '#' || /[-a-zA-Z0-9_$.@]/.test(char);
     }
 }
