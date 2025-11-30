@@ -22,6 +22,16 @@
 npm install lean-format
 ```
 
+### Tools
+
+### Lore
+[Lore](https://github.com/lore-cli/lore) is a CLI tool that uses LEAN format to capture decision context in your codebase. It's the official reference implementation for LEAN.
+
+```bash
+lore init --format lean
+lore add
+```
+
 ### Usage
 
 ```javascript

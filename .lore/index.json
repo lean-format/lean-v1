@@ -1,0 +1,12 @@
+{
+  "decisions": [
+    {
+      "id": "001",
+      "title": "Use vertical list syntax for arrays",
+      "type": "style",
+      "date": "2025-11-29T20:50:00+01:00",
+      "file": "001-vertical-list-syntax.lean"
+    }
+  ],
+  "lastUpdated": "2025-11-29T20:50:00+01:00"
+}

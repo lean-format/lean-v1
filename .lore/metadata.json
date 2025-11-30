@@ -1,0 +1,10 @@
+{
+  "totalDecisions": 0,
+  "types": {
+    "architecture": 0,
+    "implementation": 0,
+    "tooling": 0,
+    "process": 0,
+    "refactor": 0
+  }
+}
