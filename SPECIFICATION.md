@@ -1,5 +1,4 @@
-# lean-js
-# LEAN Format Specification v1.0
+# LEAN Format Specification v2.0
 
 **LEAN** — Lightweight Efficient Adaptive Notation
 
@@ -58,6 +57,7 @@ key: value
 - Keys may contain letters, numbers, underscores, hyphens, and dollar signs
 - Colon (`:`) separates key from value
 - Whitespace after colon is optional but recommended
+- Quoted keys are supported for edge cases (`"special key": value`)
 
 **Examples:**
 ```lean
@@ -66,6 +66,7 @@ age: 30
 is_active: true
 user-id: 42
 $special: value
+"key with spaces": value
 ```
 
 ### 2.3 Objects
@@ -217,19 +218,15 @@ reviews(id, customer, rating):
 
 ### 3.5 Extra Values (Strict Mode)
 
-**Loose mode (default):**
-Extra values beyond the header columns are **ignored** with a parser warning.
+**Loose mode (default):** Extra values beyond the header columns are **ignored** with a parser warning.
 
 ```lean
 users(id, name):
     - 1, Alice, extraValue
 ```
-→ `extraValue` is ignored
+-> `extraValue` is ignored
 
-**Strict mode:**
-Extra values cause a **parse error**.
-
-Parsers should provide a flag to enable strict mode.
+**Strict mode:** Extra values cause a **parse error**.
 
 ---
 
@@ -241,7 +238,7 @@ LEAN supports six value types, following JSON-lite semantics.
 
 **Unquoted strings:**
 - Valid for single words without special characters
-- Must not contain: `,` `:` `#` `[` `]` `{` `}` or whitespace
+- Must not contain `,` `:` `#` `[` `]` `{` `}` or whitespace
 - Examples: `Alice`, `hello`, `user_name`, `test-123`
 
 **Quoted strings:**
@@ -523,10 +520,12 @@ blog:
 
 ```
 Is the list of objects uniform (same keys, same order)?
-├─ YES, and > 3 items → Use row syntax
-├─ YES, but ≤ 3 items → Use standard object list syntax
-└─ NO → Use standard object list syntax
+├─ YES, and >= 4 items -> Use row syntax
+├─ YES, but <= 3 items -> Use standard object list syntax
+└─ NO -> Use standard object list syntax
 ```
+
+The threshold defaults to 4 items and is configurable via the `rowThreshold` option.
 
 **Example:**
 ```json
@@ -547,12 +546,27 @@ users:
       name: Bob
 ```
 
-**Row syntax (longer list):**
+**Row syntax (>= 4 items):**
 ```lean
 users(id, name):
     - 1, Alice
     - 2, Bob
+    - 3, Casey
+    - 4, Dave
 ```
+
+### 9.3 Dot Notation (Optional)
+
+Serializers **may** support dot notation as an explicit opt-in:
+
+```lean
+user.name: Alice
+user.age: 30
+```
+
+Dot notation is **disabled by default** in v2.0+. Enable with `useDotNotation: true`.
+
+**Rationale:** Dot notation breaks the round-trip guarantee because `parse(format(data))` changes nested object structure.
 
 ---
 
@@ -573,11 +587,12 @@ A conforming LEAN parser MUST:
 ### 10.2 Optional Features
 
 A conforming LEAN parser MAY:
-- Provide strict mode (reject extra row values)
+- Provide strict mode (reject extra row values, duplicate keys)
 - Provide schema validation
 - Support custom value parsers (dates, URLs, etc.)
 - Preserve comments in AST
 - Support streaming parsing
+- Support dot notation for serialization
 
 ### 10.3 Error Handling
 
@@ -585,18 +600,20 @@ Parsers should report errors with:
 - Line number
 - Column number (if available)
 - Clear description of the error
+- Code snippet with error location
 - Suggestion for fixing (if applicable)
 
 **Example error:**
 ```
+
 Error at line 5, column 8:
   Expected value after colon, found newline
-  
+
   4 | user:
   5 |     name:
-             ^
+            ^
   6 |     age: 30
-  
+
   Suggestion: Add a value after 'name:'
 ```
 
@@ -608,17 +625,16 @@ Error at line 5, column 8:
 
 When strict mode is enabled:
 
-1. **Extra row values** → parse error
-2. **Duplicate keys** → parse error
-3. **Invalid indentation** → parse error (always enforced)
-4. **Type consistency** (optional) → warn if row column types vary
+1. **Extra row values** -> parse error
+2. **Duplicate keys** -> parse error
+3. **Invalid indentation** -> parse error (always enforced)
+4. **Type consistency** (optional) -> warn if row column types vary
 
 ### 11.2 Enabling Strict Mode
 
 Parser-dependent. Recommended approaches:
 - CLI flag: `--strict`
 - API option: `parse(input, { strict: true })`
-- File pragma: `# lean:strict`
 
 ---
 
@@ -627,7 +643,7 @@ Parser-dependent. Recommended approaches:
 ### 12.1 Empty Lists
 
 ```lean
-tags:
+tags: []
 ```
 
 **Result:** `{ "tags": [] }`
@@ -635,7 +651,7 @@ tags:
 ### 12.2 Empty Objects
 
 ```lean
-user:
+user: {}
 ```
 
 **Result:** `{ "user": {} }`
@@ -672,7 +688,7 @@ ids(value):
 
 ```lean
 records(a, b, c):
-    - 
+    -
     - 1
 ```
 
@@ -692,38 +708,120 @@ records(a, b, c):
 
 | Feature | JSON | YAML | CSV | LEAN |
 |---------|------|------|-----|------|
-| Human-readable | ⚠️ Verbose | ✅ Yes | ⚠️ Limited | ✅ Yes |
-| Compact rows | ❌ No | ❌ No | ✅ Yes | ✅ Yes |
-| Nested objects | ✅ Yes | ✅ Yes | ❌ No | ✅ Yes |
-| Schema-optional | ✅ Yes | ✅ Yes | ⚠️ Implicit | ✅ Yes |
-| No key repetition | ❌ No | ❌ No | ✅ Yes | ✅ Yes |
-| Mixed structures | ✅ Yes | ✅ Yes | ❌ No | ✅ Yes |
-| Comments | ❌ No | ✅ Yes | ❌ No | ✅ Yes |
+| Human-readable | Verbose | Yes | Limited | Yes |
+| Compact rows | No | No | Yes | Yes |
+| Nested objects | Yes | Yes | No | Yes |
+| Schema-optional | Yes | Yes | Implicit | Yes |
+| No key repetition | No | No | Yes | Yes |
+| Mixed structures | Yes | Yes | No | Yes |
+| Comments | No | Yes | No | Yes |
+| Built-in query | No | No | No | Option |
+| Built-in diff | No | No | No | Option |
+| Schema inference | No | No | No | Option |
 
 ---
 
-## 14. Future Considerations
+## 14. Reference Implementation (v2.0+)
 
-### 14.1 Potential Extensions
+### 14.1 Architecture
+
+The reference implementation has a dual-parser architecture:
+- **Rust/WASM parser** — high-performance, compiled via wasm-pack
+- **Pure TypeScript parser** — automatic fallback when WASM is unavailable
+
+### 14.2 API
+
+```typescript
+// Parse LEAN string -> object
+parse(input: string, options?: ParseOptions): object
+
+// Format object -> LEAN string
+format(data: object, options?: FormatOptions): string
+
+// Validate LEAN
+validate(input: string, options?: ParseOptions): ValidationResult
+
+// Query data by path
+query(data: object, path: string): QueryResult
+
+// Diff two objects
+diff(a: object, b: object): DiffEntry[]
+formatDiff(entries: DiffEntry[]): string
+
+// Schema validation
+validateSchema(data: object, schema: LeanSchema): boolean
+generateSchema(data: object): LeanSchema
+```
+
+### 14.3 CLI Commands
+
+```bash
+# Parse and output as JSON
+lean parse file.lean
+lean parse < file.lean       # from stdin
+
+# Format JSON to LEAN
+lean format data.json
+lean format < data.json
+
+# Validate a LEAN file
+lean validate file.lean
+lean validate --strict file.lean
+
+# Diff two LEAN files
+lean diff file1.lean file2.lean
+
+# Query a LEAN file by path
+lean query file.lean "users[0].name"
+
+# Generate schema from data
+lean schema file.lean
+
+# Initialize a new LEAN project
+lean init my-project
+
+# Compile LEAN to JSON
+lean compile file.lean
+
+# Convert JSON to LEAN (alias for format)
+lean convert input.json -o output.lean
+```
+
+### 14.4 Format Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `indent` | number | 2 | Spaces per indent level |
+| `useDotNotation` | boolean | false | Use dot notation for nested keys |
+| `sortKeys` | boolean | false | Sort object keys alphabetically |
+| `rowThreshold` | number | 4 | Min items for row syntax conversion |
+| `strict` | boolean | false | Enable strict mode |
+
+---
+
+## 15. Future Considerations
+
+### 15.1 Potential Extensions
 
 - **Multi-line strings** — heredoc syntax
 - **Inline lists** — `tags: [a, b, c]`
 - **Type hints** — `age:int: 30`
 - **Anchors/references** — YAML-style `&` and `*`
 - **Binary data** — Base64 with type hint
+- **HTTP serve mode** — `lean serve` for API-like functionality
 
-### 14.2 Versioning
+### 15.2 Versioning
 
-This specification is version **1.0**.
+This specification is version **2.0**.
 
-Future versions will maintain backward compatibility with 1.0 or clearly document breaking changes.
-
----
-
-## 15. Reference Implementation
-
-A reference JavaScript parser is available at:
-https://github.com/lean-format/lean-js
+Key changes from 1.0:
+- Dot notation is now opt-in (not default), fixing round-trip serialization
+- Added `query`, `diff`, `schema validation`, and `schema generation` features
+- Row threshold default formalized to 4
+- Quoted keys are supported
+- Strict mode expanded to cover duplicate keys
+- Added formal CLI specification
+- Dual Rust/TypeScript parser architecture
 
 ---
 
@@ -734,7 +832,8 @@ document     = item*
 item         = comment | keyValue | list | rowList
 comment      = "#" [^\n]* "\n"
 keyValue     = key ":" value
-key          = identifier
+key          = identifier | quotedKey
+quotedKey    = "\"" [^"\n]* "\""
 value        = string | number | boolean | null | object | list
 object       = "\n" INDENT (item)* DEDENT
 list         = "\n" INDENT ("-" value "\n")* DEDENT
@@ -752,11 +851,40 @@ null         = "null"
 
 ---
 
-## Appendix B: Credits
+## Appendix B: Creative Features Reference
 
-**LEAN Format Specification v1.0**
+### B.1 Query (`lean query`)
 
-Created: 2025
+Query data using dot-notation paths:
+
+```
+path = key ( "." key | "[" index "]" | "[*]" )*
+```
+
+Examples:
+- `users[0].name` -> "Alice"
+- `store.products[*].price` -> [19.99, 29.99]
+- `tags[0]` -> "tech"
+
+### B.2 Diff (`lean diff`)
+
+Compares two LEAN files and reports additions, removals, and changes at every path level. Useful for reviewing data changes.
+
+### B.3 Schema Generation (`lean schema`)
+
+Infers a JSON Schema from sample LEAN data. Detects object structure, array item types, primitive types, and nullability.
+
+### B.4 Project Initialization (`lean init`)
+
+Creates a new directory with a `lean.json` config file and example `.lean` files for getting started.
+
+---
+
+## Appendix C: Credits
+
+**LEAN Format Specification v2.0**
+
+Created: 2025-2026
 License: MIT
 
 Designed to be a modern, human-friendly alternative to JSON, YAML, and CSV for data interchange.

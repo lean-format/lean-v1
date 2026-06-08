@@ -1,8 +1,0 @@
-src/
-test/
-.github/
-*.config.js
-.eslintrc.js
-.prettierrc
-tsconfig.json
-jest.config.js

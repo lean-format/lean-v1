@@ -1,8 +1,8 @@
 {
   "name": "lean-format-vscode",
   "displayName": "LEAN Format Support",
-  "description": "Syntax highlighting and language support for LEAN (Lightweight Efficient Adaptive Notation) format",
-  "version": "1.0.0",
+  "description": "Syntax highlighting, formatting, and validation for LEAN (Lightweight Efficient Adaptive Notation) format",
+  "version": "2.0.0",
   "author": "LEAN Format Team",
   "publisher": "lean-format",
   "icon": "images/icon.png",
@@ -14,37 +14,17 @@
   "engines": {
     "vscode": "^1.80.0"
   },
-  "categories": [
-    "Programming Languages",
-    "Formatters",
-    "Linters"
-  ],
-  "keywords": [
-    "lean",
-    "data",
-    "format",
-    "notation",
-    "syntax"
-  ],
-  "activationEvents": [
-    "onLanguage:lean"
-  ],
+  "categories": ["Programming Languages", "Formatters", "Linters"],
+  "keywords": ["lean", "data", "format", "notation", "syntax"],
+  "activationEvents": ["onLanguage:lean"],
   "contributes": {
     "languages": [
       {
         "id": "lean",
-        "aliases": [
-          "LEAN",
-          "lean"
-        ],
-        "extensions": [
-          ".lean"
-        ],
+        "aliases": ["LEAN", "lean"],
+        "extensions": [".lean"],
         "configuration": "./language-configuration.json",
-        "icon": {
-          "light": "./images/icon-light.png",
-          "dark": "./images/icon-dark.png"
-        }
+        "icon": { "light": "./images/icon-light.png", "dark": "./images/icon-dark.png" }
       }
     ],
     "grammars": [
@@ -55,9 +35,16 @@
       }
     ],
     "snippets": [
+      { "language": "lean", "path": "./snippets/lean.json" }
+    ],
+    "commands": [
       {
-        "language": "lean",
-        "path": "./snippets/lean.json"
+        "command": "lean.validate",
+        "title": "LEAN: Validate File"
+      },
+      {
+        "command": "lean.convertToJson",
+        "title": "LEAN: Convert to JSON"
       }
     ],
     "configurationDefaults": {
@@ -77,12 +64,12 @@
     "package": "npm run compile -- --production",
     "package:vsix": "vsce package --no-dependencies",
     "publish": "vsce publish --no-dependencies",
-    "test": "echo \"VS Code extension - no automated tests\" && exit 0"
+    "test": "node test.js"
   },
   "devDependencies": {
     "@types/vscode": "^1.80.0",
-    "vsce": "^2.15.0",
-    "esbuild": "^0.24.0",
-    "@lean-format/core": "^1.0.0"
+    "@lean-format/core": "^2.0.0",
+    "esbuild": "^0.25.4",
+    "vsce": "^2.15.0"
   }
 }

@@ -1,18 +1,16 @@
 {
   "name": "@lean/playground",
   "private": true,
-  "version": "0.1.0",
+  "version": "2.0.0",
   "license": "MIT",
   "description": "Interactive playground for the LEAN format",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:prod": "vite build",
-    "preview": "vite preview",
-    "test": "echo \"UI package - no automated tests\" && exit 0"
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@lean-format/core": "^1.0.1",
+    "@lean-format/core": "^2.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

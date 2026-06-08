@@ -56,6 +56,10 @@ next-env.d.ts
 /.vercel
 .vercel
 
+# Rust/WASM
+target/
+**/target/
+
 # Misc
 *.pem
 /.agent/

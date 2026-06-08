@@ -24,6 +24,23 @@ npm install lean-format
 
 ### Tools
 
+### Zero-Shot AI Schema Validation (`lean enforce`)
+JSON Schema is massive, complex, and brittle. LEAN eliminates the need for schema files entirely. 
+You can validate a `.lean` file against **plain English rules** using the embedded LLM integration:
+
+```bash
+lean enforce data.lean --rules "All users must be over 18. All emails must end in @company.com."
+```
+The CLI parses the data, securely validates it against the logic via Gemini, and returns precise validation errors.
+
+### Universal Config Compiler (`lean compile`)
+Write your configuration once in `.lean`, and compile it to JSON, YAML, TOML, and `.env` formats instantly.
+
+```bash
+lean compile config.lean
+# Outputs: config.json, config.yaml, config.toml, config.env
+```
+
 ### Lore
 [Lore](https://github.com/lore-cli/lore) is a CLI tool that uses LEAN format to capture decision context in your codebase. It's the official reference implementation for LEAN.
 
@@ -82,6 +99,12 @@ echo '{"name":"Alice","age":30}' | lean format
 
 # Chain with other tools
 curl api.example.com/data.json | lean format | tee output.lean
+
+# Compile to multiple formats
+  lean compile config.lean                # Output JSON/YAML/TOML/.env
+  lean validate data.lean --strict        # Validate with strict mode
+  lean enforce data.lean --rules="..."    # AI Semantic validation
+  lean watch data.lean                    # Auto-convert on changes
 ```
 
 ### TypeScript Support
