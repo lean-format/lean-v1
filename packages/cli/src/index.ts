@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
 import { Command } from 'commander';
 import { parse, format, validate, diff, formatDiff, query, generateSchema, initParser } from '@lean-format/core';
 import yaml from 'js-yaml';
@@ -146,7 +145,7 @@ program
   .argument('<file1>', 'First LEAN file')
   .argument('<file2>', 'Second LEAN file')
   .option('-q, --quiet', 'Suppress info messages')
-  .action(async (file1, file2, opts) => {
+  .action(async (file1, file2, _opts) => {
     await ensureInit();
     try {
       const content1 = readFileSync(file1, 'utf-8');

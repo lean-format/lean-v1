@@ -48,7 +48,7 @@ export default function Page() {
             await navigator.clipboard.writeText(text);
             setCopiedText(text);
             setTimeout(() => setCopiedText(''), 2000);
-        } catch (err) {
+        } catch {
             // Fallback for older browsers
             const textArea = document.createElement('textarea');
             textArea.value = text;

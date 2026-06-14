@@ -82,7 +82,7 @@ interface PathPart {
 
 function parsePath(path: string): PathPart[] {
   const parts: PathPart[] = [];
-  const regex = /(?:([^.\[\]]+)|\[(\d+|\*)\])/g;
+  const regex = /(?:([^.[\]]+)|\[(\d+|\*)\])/g;
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(path)) !== null) {

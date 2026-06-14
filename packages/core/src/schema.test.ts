@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateSchema, SchemaValidator, validateSchema } from './schema.js';
+import { generateSchema, validateSchema } from './schema.js';
 
 describe('LEAN Schema Generation', () => {
   it('generates schema from simple object', () => {

@@ -7,7 +7,6 @@ import {
   InitializeParams,
   TextDocumentSyncKind,
   InitializeResult,
-  Hover,
   MarkupContent,
   MarkupKind,
   CompletionItem,
@@ -27,7 +26,7 @@ initParser().catch(() => {
   connection.console.log('WASM parser unavailable, using JS fallback');
 });
 
-connection.onInitialize((params: InitializeParams) => {
+connection.onInitialize((_params: InitializeParams) => {
   const result: InitializeResult = {
     capabilities: {
       textDocumentSync: TextDocumentSyncKind.Incremental,

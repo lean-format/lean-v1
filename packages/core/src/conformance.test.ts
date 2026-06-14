@@ -223,7 +223,7 @@ describe('Strict Mode Conformance', () => {
 
 describe('Error Handling Conformance', () => {
   it('throws on invalid input type', () => {
-    expect(() => (parse as Function)(null)).toThrow('Input must be a string');
+    expect(() => (parse as (...args: unknown[]) => unknown)(null)).toThrow('Input must be a string');
   });
 
   it('throws on unexpected list item at root', () => {

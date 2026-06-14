@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "description": "LEAN Format - Complete project repository",
   "private": true,
+  "type": "module",
   "workspaces": [
     "packages/core",
     "packages/cli",
