@@ -6,7 +6,7 @@
   "description": "Interactive playground for the LEAN format",
   "scripts": {
     "dev": "vite",
-    "build:app": "vite build",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {

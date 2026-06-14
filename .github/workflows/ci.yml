@@ -95,8 +95,14 @@ jobs:
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
-      - name: Build all packages
-        run: npm run build
+      - name: Stub WASM parser for build
+        run: |
+          mkdir -p packages/lean-parser-rs/pkg
+          printf '{"name":"lean-parser-rs","version":"0.1.0","types":"index.d.ts","main":"index.js"}\n' > packages/lean-parser-rs/pkg/package.json
+          printf 'export function parse(input: string): any;\nexport function initParser(): Promise<void>;\n' > packages/lean-parser-rs/pkg/index.d.ts
+          printf 'module.exports = {};\n' > packages/lean-parser-rs/pkg/index.js
+      - name: Build packages for release
+        run: npm run build:ts
       - name: Publish to npm
         run: |
           npx changeset publish
