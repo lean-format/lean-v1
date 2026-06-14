@@ -1,5 +1,12 @@
 # Security Guide
 
+## Supported Versions
+
+| Version | Supported |
+|---------|-----------|
+| 2.x.x   | ✅ Active development |
+| 1.x.x   | ❌ No longer supported |
+
 ## DoS Protection
 
 The LEAN parser includes configurable limits to prevent denial-of-service attacks:

@@ -33,7 +33,7 @@ By participating in this project, you agree to abide by our [Code of Conduct](CO
 ## Development Setup
 
 ### Prerequisites
-- Node.js 16 or higher
+- Node.js 18 or higher
 - npm or yarn
 
 ### Local Development

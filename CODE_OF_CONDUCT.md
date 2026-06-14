@@ -74,4 +74,4 @@ For answers to common questions about this code of conduct, see the FAQ at https
 
 ---
 
-*Last updated: November 2025*
+*Last updated: June 2026*
