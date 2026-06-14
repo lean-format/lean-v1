@@ -18,7 +18,7 @@
     "test": "echo \"UI package - no automated tests\" && exit 0"
   },
   "dependencies": {
-    "@lean-format/core": "^1.0.1",
+    "@lean-format/core": "^2.0.0",
     "gh-pages": "^6.1.0",
     "next": "15.4.7",
     "react": "^18.3.1",
