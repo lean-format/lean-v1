@@ -14,11 +14,15 @@ export function activate(context: vscode.ExtensionContext) {
     provideDocumentFormattingEdits(document: vscode.TextDocument) {
       try {
         const text = document.getText();
+        const cfg = vscode.workspace.getConfiguration('lean');
         const parsed = parse(text);
+        const indentSize = cfg.get('format.indentSize', 2);
         const formatted = format(parsed, {
-          indent: '  ',
-          useRowSyntax: true,
-          rowThreshold: 4,
+          indent: ' '.repeat(indentSize),
+          useRowSyntax: cfg.get('format.useRowSyntax', true),
+          rowThreshold: cfg.get('format.rowThreshold', 4),
+          sortKeys: cfg.get('format.sortKeys', false),
+          useDotNotation: cfg.get('format.useDotNotation', false),
         });
 
         const fullRange = new vscode.Range(

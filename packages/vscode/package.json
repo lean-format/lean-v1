@@ -47,6 +47,43 @@
         "title": "LEAN: Convert to JSON"
       }
     ],
+    "configuration": {
+      "title": "LEAN Format",
+      "properties": {
+        "lean.format.indentSize": {
+          "type": "number",
+          "default": 2,
+          "enum": [2, 4],
+          "description": "Number of spaces for indentation"
+        },
+        "lean.format.useRowSyntax": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use row syntax for arrays of objects"
+        },
+        "lean.format.rowThreshold": {
+          "type": "number",
+          "default": 4,
+          "minimum": 1,
+          "description": "Minimum number of items to trigger row syntax"
+        },
+        "lean.format.sortKeys": {
+          "type": "boolean",
+          "default": false,
+          "description": "Sort keys alphabetically on format"
+        },
+        "lean.format.useDotNotation": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use dot notation for nested keys (may break round-trip)"
+        },
+        "lean.validate.strict": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable strict validation (duplicate key detection, etc.)"
+        }
+      }
+    },
     "configurationDefaults": {
       "[lean]": {
         "editor.insertSpaces": true,

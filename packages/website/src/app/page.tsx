@@ -370,8 +370,8 @@ console.log(lean);`}
                     <div className="install-step">
                         <h3>3. Try It Live</h3>
                         <p>Experiment with LEAN in our interactive playground:</p>
-                        <Link href="/playground" className="btn btn-primary">
-                            🎮 Open Playground
+                        <Link href="/playground/lite" className="btn btn-primary">
+                            Open Playground
                         </Link>
                     </div>
                 </div>

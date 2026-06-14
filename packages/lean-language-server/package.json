@@ -9,6 +9,10 @@
     "watch": "tsc -w",
     "typecheck": "tsc --noEmit"
   },
+  "publishConfig": {
+    "provenance": true,
+    "access": "public"
+  },
   "dependencies": {
     "@lean-format/core": "^2.0.0",
     "vscode-languageserver": "^9.0.1",

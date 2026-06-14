@@ -1,6 +1,9 @@
 import { LeanLexer } from './lexer.js';
 import { Token, TokenType } from './types.js';
-import { LeanParseError } from './errors.js';
+import { ErrorCode, LeanParseError } from './errors.js';
+import type { ParseOptions } from './types.js';
+
+const DEFAULT_MAX_DEPTH = 100;
 
 /**
  * Pure TypeScript LEAN parser.
@@ -12,12 +15,14 @@ export class JsLeanParser {
   private tokens: Token[];
   private pos: number;
   private seenKeys: Map<string, number>;
+  private maxDepth: number;
 
-  constructor(strict: boolean = false) {
+  constructor(strict: boolean = false, options: ParseOptions = {}) {
     this.strict = strict;
     this.tokens = [];
     this.pos = 0;
     this.seenKeys = new Map();
+    this.maxDepth = options.maxDepth ?? DEFAULT_MAX_DEPTH;
   }
 
   parse(input: string): Record<string, unknown> {
@@ -26,20 +31,34 @@ export class JsLeanParser {
     this.pos = 0;
     this.seenKeys.clear();
 
-    const result = this.parseBlock();
+    const result = this.parseBlock(0);
 
     if (this.peek().type !== TokenType.Eof) {
       throw new LeanParseError(
         `Unexpected token after end of document: ${this.peek().type}`,
         this.peek().line,
         this.peek().column,
+        undefined, undefined,
+        ErrorCode.UNEXPECTED_TOKEN,
       );
     }
 
     return result as Record<string, unknown>;
   }
 
+  private checkDepth(level: number): void {
+    if (this.maxDepth > 0 && level > this.maxDepth) {
+      throw new LeanParseError(
+        `Maximum nesting depth of ${this.maxDepth} exceeded`,
+        0, 0, undefined,
+        `Increase maxDepth option or flatten your data structure.`,
+        ErrorCode.DEPTH_EXCEEDED,
+      );
+    }
+  }
+
   private parseBlock(level: number = 0): Record<string, unknown> {
+    this.checkDepth(level);
     const obj: Record<string, unknown> = {};
 
     while (
@@ -51,6 +70,8 @@ export class JsLeanParser {
           'Unexpected indentation at document root (or inside block)',
           this.peek().line,
           this.peek().column,
+          undefined, undefined,
+          ErrorCode.UNEXPECTED_INDENT,
         );
       }
       if (this.peek().type === TokenType.Newline) {
@@ -91,6 +112,7 @@ export class JsLeanParser {
         keyToken.column,
         undefined,
         'List items must be inside a keyed list. Did you forget to add a key?',
+        ErrorCode.UNEXPECTED_TOKEN,
       );
     }
 
@@ -101,6 +123,7 @@ export class JsLeanParser {
         keyToken.column,
         undefined,
         'Keys must start with a letter, underscore, or dollar sign.',
+        ErrorCode.UNEXPECTED_TOKEN,
       );
     }
 
@@ -116,6 +139,7 @@ export class JsLeanParser {
           keyToken.column,
           undefined,
           'Remove or rename the duplicate key.',
+          ErrorCode.DUPLICATE_KEY,
         );
       }
       this.seenKeys.set(keyPath, keyToken.line);
@@ -131,11 +155,13 @@ export class JsLeanParser {
         `Expected ':' after key`,
         keyToken.line,
         keyToken.column,
+        undefined, undefined,
+        ErrorCode.EXPECTED_COLON,
       );
     }
     this.advance(); // skip colon
 
-    const value = this.parseValue(level);
+    const value = this.parseValue(level + 1);
 
     if (key.includes('.')) {
       return this.expandDotNotation(key, value);
@@ -176,7 +202,7 @@ export class JsLeanParser {
       const values: unknown[] = [];
 
       while (this.peek().type !== TokenType.Newline && this.peek().type !== TokenType.Eof) {
-        values.push(this.parseSimpleValue());
+        values.push(this.parseSimpleValue(0));
         if (this.peek().type === TokenType.Comma) {
           this.advance();
         } else {
@@ -191,6 +217,7 @@ export class JsLeanParser {
           this.peek().column,
           undefined,
           `Expected ${columns.length} values: ${columns.join(', ')}`,
+          ErrorCode.EXTRA_ROW_VALUES,
         );
       }
 
@@ -211,6 +238,9 @@ export class JsLeanParser {
       }
     }
 
+    while (this.peek().type === TokenType.Newline) {
+      this.advance();
+    }
     this.consume(TokenType.Dedent);
 
     if (key.includes('.')) {
@@ -223,14 +253,23 @@ export class JsLeanParser {
   private parseValue(level: number): unknown {
     if (this.peek().type === TokenType.Newline) {
       this.advance();
+      while (this.peek().type === TokenType.Newline) {
+        this.advance();
+      }
       if (this.peek().type === TokenType.Indent) {
         this.advance();
         if (this.peek().type === TokenType.Hyphen) {
-          const list = this.parseList(level + 1);
+          const list = this.parseList(level);
+          while (this.peek().type === TokenType.Newline) {
+            this.advance();
+          }
           this.consume(TokenType.Dedent);
           return list;
         } else {
-          const obj = this.parseBlock(level + 1);
+          const obj = this.parseBlock(level);
+          while (this.peek().type === TokenType.Newline) {
+            this.advance();
+          }
           this.consume(TokenType.Dedent);
           return obj;
         }
@@ -243,10 +282,11 @@ export class JsLeanParser {
       return null;
     }
 
-    return this.parseSimpleValue();
+    return this.parseSimpleValue(level);
   }
 
   private parseList(level: number): unknown[] {
+    this.checkDepth(level);
     const list: unknown[] = [];
 
     while (this.peek().type === TokenType.Hyphen) {
@@ -262,11 +302,12 @@ export class JsLeanParser {
         }
         this.consume(TokenType.Dedent);
       } else {
-        const isObject =
-          this.peek().type === TokenType.Identifier || this.peek().type === TokenType.String;
-        const nextPeek = this.pos + 1 < this.tokens.length ? this.tokens[this.pos + 1] : null;
+        const isKeyValuePair =
+          (this.peek().type === TokenType.Identifier || this.peek().type === TokenType.String) &&
+          this.pos + 1 < this.tokens.length &&
+          this.tokens[this.pos + 1].type === TokenType.Colon;
 
-        if (isObject && nextPeek && nextPeek.type === TokenType.Colon) {
+        if (isKeyValuePair) {
           const itemObj: Record<string, unknown> = {};
           const item = this.parseItem(level);
           if (item) {
@@ -287,7 +328,7 @@ export class JsLeanParser {
           }
           list.push(itemObj);
         } else {
-          list.push(this.parseSimpleValue());
+          list.push(this.parseSimpleValue(level));
           if (this.peek().type === TokenType.Newline) {
             this.advance();
           }
@@ -298,7 +339,7 @@ export class JsLeanParser {
     return list;
   }
 
-  private parseSimpleValue(): unknown {
+  private parseSimpleValue(level: number = 0): unknown {
     const token = this.peek();
     this.advance();
 
@@ -321,30 +362,86 @@ export class JsLeanParser {
           this.advance();
           return {};
         }
-        throw new LeanParseError(
-          "Expected '}' for empty object",
-          token.line,
-          token.column,
-        );
+        // Inline object: { key: value, ... }
+        return this.parseInlineObject(level);
 
       case TokenType.LBracket:
         if (this.peek().type === TokenType.RBracket) {
           this.advance();
           return [];
         }
-        throw new LeanParseError(
-          "Expected ']' for empty list",
-          token.line,
-          token.column,
-        );
+        // Inline array: [ value, ... ]
+        return this.parseInlineArray(level);
 
       default:
         throw new LeanParseError(
           `Unexpected token for value: ${token.type}`,
           token.line,
           token.column,
+          undefined, undefined,
+          ErrorCode.UNEXPECTED_TOKEN,
         );
     }
+  }
+
+  private parseInlineObject(level: number): Record<string, unknown> {
+    this.checkDepth(level);
+    const obj: Record<string, unknown> = {};
+
+    while (this.peek().type !== TokenType.RBrace) {
+      const keyToken = this.peek();
+      if (keyToken.type !== TokenType.Identifier && keyToken.type !== TokenType.String) {
+        break;
+      }
+      const key = this.getStringValue(keyToken);
+      this.advance();
+
+      if (this.peek().type !== TokenType.Colon) break;
+      this.advance();
+      obj[key] = this.parseSimpleValue(level + 1);
+
+      if (this.peek().type === TokenType.Comma) {
+        this.advance();
+      } else {
+        break;
+      }
+    }
+
+    if (this.peek().type === TokenType.RBrace) {
+      this.advance();
+      return obj;
+    }
+    throw new LeanParseError(
+      "Expected '}' for inline object",
+      0, 0,
+      undefined, undefined,
+      ErrorCode.EXPECTED_RBRACE,
+    );
+  }
+
+  private parseInlineArray(level: number): unknown[] {
+    this.checkDepth(level);
+    const arr: unknown[] = [];
+
+    while (this.peek().type !== TokenType.RBracket) {
+      arr.push(this.parseSimpleValue(level + 1));
+      if (this.peek().type === TokenType.Comma) {
+        this.advance();
+      } else {
+        break;
+      }
+    }
+
+    if (this.peek().type === TokenType.RBracket) {
+      this.advance();
+      return arr;
+    }
+    throw new LeanParseError(
+      "Expected ']' for inline array",
+      0, 0,
+      undefined, undefined,
+      ErrorCode.EXPECTED_RBRACKET,
+    );
   }
 
   private expandDotNotation(key: string, value: unknown): [string, unknown] {

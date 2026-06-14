@@ -21,16 +21,17 @@ impl LeanParser {
         self.tokens = lexer.tokenize()?;
         self.pos = 0;
 
-        let result = self.parse_block()?;
+        let result = self.parse_block(0)?;
 
         if self.peek().token_type != TokenType::Eof {
-            return Err(format!("Unexpected token after end of document: {:?}", self.peek().token_type));
+            return Err(format!("Unexpected token after end of document: {:?} at line {}, column {}",
+                self.peek().token_type, self.peek().line, self.peek().column));
         }
 
         Ok(result)
     }
 
-    fn parse_block(&mut self) -> Result<Value, String> {
+    fn parse_block(&mut self, level: usize) -> Result<Value, String> {
         let mut obj = Map::new();
 
         while self.peek().token_type != TokenType::Eof && self.peek().token_type != TokenType::Dedent {
@@ -42,8 +43,7 @@ impl LeanParser {
                 continue;
             }
 
-            if let Some((key, val)) = self.parse_item()? {
-                // Merge deeply
+            if let Some((key, val)) = self.parse_item(level)? {
                 Self::deep_merge(&mut obj, key, val);
             }
         }
@@ -67,11 +67,11 @@ impl LeanParser {
         }
     }
 
-    fn parse_item(&mut self) -> Result<Option<(String, Value)>, String> {
+    fn parse_item(&mut self, level: usize) -> Result<Option<(String, Value)>, String> {
         let key_token = self.peek().clone();
 
         if key_token.token_type == TokenType::Hyphen {
-            return Err(format!("Unexpected list item at line {}. Expected key.", key_token.line));
+            return Err(format!("Unexpected list item. Expected key. at line {}", key_token.line));
         }
 
         if key_token.token_type != TokenType::Identifier && key_token.token_type != TokenType::String {
@@ -91,9 +91,9 @@ impl LeanParser {
         if self.peek().token_type != TokenType::Colon {
             return Err(format!("Expected ':' after key at line {}", key_token.line));
         }
-        self.advance(); // Skip colon
+        self.advance();
 
-        let value = self.parse_value()?;
+        let value = self.parse_value(level + 1)?;
 
         if key.contains('.') {
             let (root_key, expanded) = Self::expand_dot_notation(&key, value);
@@ -122,23 +122,18 @@ impl LeanParser {
         if self.peek().token_type == TokenType::Newline {
             self.advance();
         } else if self.peek().token_type == TokenType::Eof {
-            // allow EOF
-        } else {
-            return Err(format!("Expected NEWLINE or EOF after colon at line {}", self.peek().line));
+            return Ok((key, Value::Array(vec![])));
         }
 
         if self.peek().token_type == TokenType::Indent {
             self.consume(TokenType::Indent)?;
         } else {
-            if self.peek().token_type == TokenType::Eof {
-                return Ok((key, Value::Array(vec![])));
-            }
             return Ok((key, Value::Array(vec![])));
         }
 
         let mut rows = Vec::new();
         while self.peek().token_type == TokenType::Hyphen {
-            self.advance(); // skip hyphen
+            self.advance();
             let mut row = Map::new();
             let mut values = Vec::new();
 
@@ -152,7 +147,8 @@ impl LeanParser {
             }
 
             if self.strict && values.len() > columns.len() {
-                return Err(format!("Row has {} values but header defines {} columns at line {}", values.len(), columns.len(), self.peek().line));
+                let line = if values.is_empty() { self.peek().line } else { self.peek().line };
+                return Err(format!("Row has {} values but header defines {} columns at line {}", values.len(), columns.len(), line));
             }
 
             for (idx, col) in columns.iter().enumerate() {
@@ -175,23 +171,23 @@ impl LeanParser {
         }
     }
 
-    fn parse_value(&mut self) -> Result<Value, String> {
+    fn parse_value(&mut self, level: usize) -> Result<Value, String> {
         if self.peek().token_type == TokenType::Newline {
             self.advance();
             if self.peek().token_type == TokenType::Indent {
                 self.advance();
 
                 if self.peek().token_type == TokenType::Hyphen {
-                    let list = self.parse_list()?;
+                    let list = self.parse_list(level)?;
                     self.consume(TokenType::Dedent)?;
                     return Ok(list);
                 } else {
-                    let obj = self.parse_block()?;
+                    let obj = self.parse_block(level)?;
                     self.consume(TokenType::Dedent)?;
                     return Ok(obj);
                 }
             } else {
-                return Ok(Value::Null); // Empty value
+                return Ok(Value::Null);
             }
         }
 
@@ -202,7 +198,7 @@ impl LeanParser {
         self.parse_simple_value()
     }
 
-    fn parse_list(&mut self) -> Result<Value, String> {
+    fn parse_list(&mut self, level: usize) -> Result<Value, String> {
         let mut list = Vec::new();
 
         while self.peek().token_type == TokenType::Hyphen {
@@ -212,19 +208,20 @@ impl LeanParser {
                 self.advance();
                 self.consume(TokenType::Indent)?;
                 if self.peek().token_type == TokenType::Hyphen {
-                    list.push(self.parse_list()?);
+                    list.push(self.parse_list(level + 1)?);
                 } else {
-                    list.push(self.parse_block()?);
+                    list.push(self.parse_block(level + 1)?);
                 }
                 self.consume(TokenType::Dedent)?;
             } else {
-                let is_object = self.peek().token_type == TokenType::Identifier || self.peek().token_type == TokenType::String;
-                let next_peek = if self.pos + 1 < self.tokens.len() { Some(&self.tokens[self.pos + 1]) } else { None };
+                let is_key_value = (self.peek().token_type == TokenType::Identifier || self.peek().token_type == TokenType::String)
+                    && self.pos + 1 < self.tokens.len()
+                    && self.tokens[self.pos + 1].token_type == TokenType::Colon;
 
-                if is_object && next_peek.map_or(false, |t| t.token_type == TokenType::Colon) {
+                if is_key_value {
                     let mut item_obj = Map::new();
                     
-                    if let Some((k, v)) = self.parse_item()? {
+                    if let Some((k, v)) = self.parse_item(level)? {
                         Self::deep_merge(&mut item_obj, k, v);
                     }
 
@@ -234,7 +231,7 @@ impl LeanParser {
 
                     if self.peek().token_type == TokenType::Indent {
                         self.advance();
-                        let rest_block = self.parse_block()?;
+                        let rest_block = self.parse_block(level + 1)?;
                         if let Value::Object(rest_map) = rest_block {
                             for (k, v) in rest_map {
                                 Self::deep_merge(&mut item_obj, k, v);
@@ -290,8 +287,11 @@ impl LeanParser {
                 if self.peek().token_type == TokenType::RBrace {
                     self.advance();
                     Ok(Value::Object(Map::new()))
+                } else if self.peek().token_type == TokenType::Identifier || self.peek().token_type == TokenType::String {
+                    let obj = self.parse_inline_object()?;
+                    Ok(Value::Object(obj))
                 } else {
-                    Err(format!("Expected '}}' for empty object at line {}", token.line))
+                    Err(format!("Expected '}}' or key for inline object at line {}", token.line))
                 }
             }
             TokenType::LBracket => {
@@ -299,10 +299,64 @@ impl LeanParser {
                     self.advance();
                     Ok(Value::Array(vec![]))
                 } else {
-                    Err(format!("Expected ']' for empty list at line {}", token.line))
+                    let arr = self.parse_inline_array()?;
+                    Ok(Value::Array(arr))
                 }
             }
             _ => Err(format!("Unexpected token for value: {:?} at line {}", token.token_type, token.line)),
+        }
+    }
+
+    fn parse_inline_object(&mut self) -> Result<Map<String, Value>, String> {
+        let mut obj = Map::new();
+        while self.peek().token_type != TokenType::RBrace {
+            let key_token = self.peek().clone();
+            if key_token.token_type != TokenType::Identifier && key_token.token_type != TokenType::String {
+                break;
+            }
+            let key = if let TokenValue::String(ref s) = key_token.value {
+                s.clone()
+            } else {
+                return Err(format!("Expected string key at line {}", key_token.line));
+            };
+            self.advance();
+
+            if self.peek().token_type != TokenType::Colon {
+                break;
+            }
+            self.advance();
+            let value = self.parse_simple_value()?;
+            obj.insert(key, value);
+
+            if self.peek().token_type == TokenType::Comma {
+                self.advance();
+            } else {
+                break;
+            }
+        }
+        if self.peek().token_type == TokenType::RBrace {
+            self.advance();
+            Ok(obj)
+        } else {
+            Err(format!("Expected '}}' for inline object at line {}", self.peek().line))
+        }
+    }
+
+    fn parse_inline_array(&mut self) -> Result<Vec<Value>, String> {
+        let mut arr = Vec::new();
+        while self.peek().token_type != TokenType::RBracket {
+            arr.push(self.parse_simple_value()?);
+            if self.peek().token_type == TokenType::Comma {
+                self.advance();
+            } else {
+                break;
+            }
+        }
+        if self.peek().token_type == TokenType::RBracket {
+            self.advance();
+            Ok(arr)
+        } else {
+            Err(format!("Expected ']' for inline array at line {}", self.peek().line))
         }
     }
 

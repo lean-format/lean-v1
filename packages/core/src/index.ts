@@ -35,4 +35,5 @@ export type {
 } from './types.js';
 
 // Classes
-export { LeanParseError, LeanSerializeError } from './errors.js';
+export { LeanParseError, LeanSerializeError, ErrorCode } from './errors.js';
+export type { ErrorCodeType } from './errors.js';

@@ -15,6 +15,12 @@ export type LeanValue =
 export interface ParseOptions {
   /** Enable strict mode: reject extra row values, duplicate keys */
   strict?: boolean;
+  /** Maximum nesting depth (default: 100, 0 = unlimited) */
+  maxDepth?: number;
+  /** Maximum input size in bytes (default: 0 = unlimited) */
+  maxInputSize?: number;
+  /** Error code for programmatic error handling */
+  errorCode?: string;
 }
 
 /** Options for the serializer */

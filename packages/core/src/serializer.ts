@@ -19,6 +19,12 @@ export function format(obj: unknown, options: FormatOptions = {}): string {
   const useDotNotation = options.useDotNotation ?? false;
   const sortKeys = options.sortKeys ?? false;
 
+  if (useDotNotation) {
+    console.warn(
+      '[LEAN Warning] useDotNotation is enabled. This may break round-trip serialization: parse(format(data, { useDotNotation: true })) may not equal data. Use with caution.',
+    );
+  }
+
   if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
     throw new LeanSerializeError('Root value must be a non-null object');
   }
@@ -119,7 +125,7 @@ export function format(obj: unknown, options: FormatOptions = {}): string {
     for (const [key, value] of entries) {
       // Use dot-notation only if explicitly enabled
       if (useDotNotation && typeof value === 'object' && value !== null && !Array.isArray(value)) {
-        result += serializeDotNotation(obj, prefix, indent, useRowSyntax, rowThreshold, toLeanValue);
+        result += serializeDotNotation(obj, prefix, indent, useRowSyntax, rowThreshold, toLeanValue, level);
         break; // serializeDotNotation handles all keys
       }
 
@@ -163,11 +169,12 @@ export function format(obj: unknown, options: FormatOptions = {}): string {
 
   function serializeDotNotation(
     obj: Record<string, unknown>,
-    _prefix: string,
+    prefix: string,
     _indent: string,
     _useRowSyntax: boolean,
     _rowThreshold: number,
     _toLeanValue: (v: unknown, l: number) => string,
+    level: number = 0,
   ): string {
     const flat = flattenObject(obj);
     const sortedEntries = sortKeys
@@ -175,11 +182,12 @@ export function format(obj: unknown, options: FormatOptions = {}): string {
       : Object.entries(flat);
 
     let result = '';
+    const indentStr = prefix || _indent.repeat(level);
     for (const [key, value] of sortedEntries) {
       if (Array.isArray(value) && value.length > 0) {
-        result += `${_indent.repeat(0)}${key}:${_toLeanValue(value, 0)}\n`;
+        result += `${indentStr}${key}:${_toLeanValue(value, level)}\n`;
       } else {
-        result += `${_indent.repeat(0)}${key}: ${_toLeanValue(value, 0)}\n`;
+        result += `${indentStr}${key}: ${_toLeanValue(value, level)}\n`;
       }
     }
     return result;

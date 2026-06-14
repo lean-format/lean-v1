@@ -51,7 +51,8 @@ export function query(data: unknown, path: string): QueryResult {
         return { value: undefined, path, exists: false };
       }
 
-      const remainingPath = parts.slice(parts.indexOf(part) + 1);
+      const partIndex = parts.indexOf(part);
+      const remainingPath = parts.slice(partIndex + 1);
       if (remainingPath.length === 0) {
         return { value: current, path, exists: true };
       }

@@ -32,9 +32,11 @@ export class SchemaValidator {
   }
 
   private validateValue(value: unknown, schema: LeanSchema, path: string): boolean {
+    let valid = true;
+
     if (schema.type && schema.type !== 'any') {
       if (!this.checkType(value, schema.type, path)) {
-        return false;
+        valid = false;
       }
     }
 
@@ -46,7 +48,7 @@ export class SchemaValidator {
         for (const field of schema.required) {
           if (!(field in obj)) {
             this.errors.push({ path, message: `Missing required field: '${field}'` });
-            return false;
+            valid = false;
           }
         }
       }
@@ -54,7 +56,7 @@ export class SchemaValidator {
       for (const [key, propSchema] of Object.entries(schema.properties)) {
         if (key in obj) {
           if (!this.validateValue(obj[key], propSchema, `${path}.${key}`)) {
-            return false;
+            valid = false;
           }
         }
       }
@@ -64,7 +66,7 @@ export class SchemaValidator {
         for (const key of Object.keys(obj)) {
           if (!allowedKeys.has(key)) {
             this.errors.push({ path, message: `Additional property not allowed: '${key}'` });
-            return false;
+            valid = false;
           }
         }
       }
@@ -74,41 +76,41 @@ export class SchemaValidator {
     if (schema.type === 'array' && schema.items) {
       if (!Array.isArray(value)) {
         this.errors.push({ path, message: `Expected array, got ${typeof value}` });
-        return false;
-      }
-
-      for (let i = 0; i < value.length; i++) {
-        if (!this.validateValue(value[i], schema.items, `${path}[${i}]`)) {
-          return false;
+        valid = false;
+      } else {
+        for (let i = 0; i < value.length; i++) {
+          if (!this.validateValue(value[i], schema.items, `${path}[${i}]`)) {
+            valid = false;
+          }
         }
-      }
 
-      if (schema.minItems !== undefined && value.length < schema.minItems) {
-        this.errors.push({ path, message: `Array must have at least ${schema.minItems} items, got ${value.length}` });
-        return false;
-      }
+        if (schema.minItems !== undefined && value.length < schema.minItems) {
+          this.errors.push({ path, message: `Array must have at least ${schema.minItems} items, got ${value.length}` });
+          valid = false;
+        }
 
-      if (schema.maxItems !== undefined && value.length > schema.maxItems) {
-        this.errors.push({ path, message: `Array must have at most ${schema.maxItems} items, got ${value.length}` });
-        return false;
+        if (schema.maxItems !== undefined && value.length > schema.maxItems) {
+          this.errors.push({ path, message: `Array must have at most ${schema.maxItems} items, got ${value.length}` });
+          valid = false;
+        }
       }
     }
 
     // Enum
     if (schema.enum !== undefined && !schema.enum.includes(value)) {
       this.errors.push({ path, message: `Value must be one of: ${schema.enum.join(', ')}. Got: ${JSON.stringify(value)}` });
-      return false;
+      valid = false;
     }
 
     // Number constraints
     if (typeof value === 'number') {
       if (schema.minimum !== undefined && value < schema.minimum) {
         this.errors.push({ path, message: `Value must be >= ${schema.minimum}, got ${value}` });
-        return false;
+        valid = false;
       }
       if (schema.maximum !== undefined && value > schema.maximum) {
         this.errors.push({ path, message: `Value must be <= ${schema.maximum}, got ${value}` });
-        return false;
+        valid = false;
       }
     }
 
@@ -116,27 +118,27 @@ export class SchemaValidator {
     if (typeof value === 'string') {
       if (schema.minLength !== undefined && value.length < schema.minLength) {
         this.errors.push({ path, message: `String must be at least ${schema.minLength} characters, got ${value.length}` });
-        return false;
+        valid = false;
       }
       if (schema.maxLength !== undefined && value.length > schema.maxLength) {
         this.errors.push({ path, message: `String must be at most ${schema.maxLength} characters, got ${value.length}` });
-        return false;
+        valid = false;
       }
       if (schema.pattern) {
         try {
           const regex = new RegExp(schema.pattern);
           if (!regex.test(value)) {
             this.errors.push({ path, message: `String must match pattern: ${schema.pattern}` });
-            return false;
+            valid = false;
           }
         } catch {
           this.errors.push({ path, message: `Invalid regex pattern: ${schema.pattern}` });
-          return false;
+          valid = false;
         }
       }
     }
 
-    return true;
+    return valid;
   }
 
   private checkType(value: unknown, expectedType: string, path: string): boolean {

@@ -4,6 +4,8 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { Command } from 'commander';
 import { parse, format, validate, diff, formatDiff, query, generateSchema, initParser } from '@lean-format/core';
+import yaml from 'js-yaml';
+import toml from '@iarna/toml';
 
 const program = new Command();
 
@@ -322,54 +324,12 @@ function toEnv(obj: Record<string, unknown>, prefix = ''): string {
   return result;
 }
 
-function toYaml(obj: Record<string, unknown>, indent = 0): string {
-  let result = '';
-  const spaces = ' '.repeat(indent);
-  for (const [key, value] of Object.entries(obj)) {
-    if (typeof value === 'object' && value !== null) {
-      if (Array.isArray(value)) {
-        result += `${spaces}${key}:\n`;
-        for (const item of value) {
-          if (typeof item === 'object' && item !== null) {
-            result += `${spaces}  -\n${toYaml(item as Record<string, unknown>, indent + 4)}`;
-          } else {
-            const safe = typeof item === 'string' && /[:\[\]{}#,>&*!|]/.test(item) ? `"${item}"` : String(item);
-            result += `${spaces}  - ${safe}\n`;
-          }
-        }
-      } else {
-        result += `${spaces}${key}:\n${toYaml(value as Record<string, unknown>, indent + 2)}`;
-      }
-    } else {
-      const safe = typeof value === 'string' && /[:\[\]{}#,>&*!|]/.test(value) ? `"${value}"` : String(value);
-      result += `${spaces}${key}: ${safe}\n`;
-    }
-  }
-  return result;
+function toYaml(obj: Record<string, unknown>): string {
+  return yaml.dump(obj, { indent: 2, noRefs: true, sortKeys: false });
 }
 
-function toToml(obj: Record<string, unknown>, prefix = ''): string {
-  let result = '';
-  let tables = '';
-  for (const [key, value] of Object.entries(obj)) {
-    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      const newPrefix = prefix ? `${prefix}.${key}` : key;
-      tables += `\n[${newPrefix}]\n${toToml(value as Record<string, unknown>, newPrefix)}`;
-    } else if (Array.isArray(value)) {
-      if (value.length > 0 && typeof value[0] === 'object' && value[0] !== null) {
-        for (const item of value) {
-          tables += `\n[[${prefix ? `${prefix}.` : ''}${key}]]\n${toToml(item as Record<string, unknown>, '')}`;
-        }
-      } else {
-        const arrStr = value.map(v => typeof v === 'string' ? JSON.stringify(v) : String(v)).join(', ');
-        result += `${key} = [${arrStr}]\n`;
-      }
-    } else {
-      const safe = typeof value === 'string' ? JSON.stringify(value) : String(value);
-      result += `${key} = ${safe}\n`;
-    }
-  }
-  return result + tables;
+function toToml(obj: Record<string, unknown>): string {
+  return toml.stringify(obj as any);
 }
 
 main().catch((err) => {
