@@ -89,7 +89,7 @@ export function parse(input: string, options: ParseOptions = {}): unknown {
   // Auto-init WASM in background on first use
   ensureWasmInit();
 
-  if (wasmParse !== null) {
+  if (typeof wasmParse === 'function') {
     validateInput(input, options);
     try {
       return wasmParse(input, strict);

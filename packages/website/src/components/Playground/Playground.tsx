@@ -109,6 +109,7 @@ export default function Playground() {
         }
         return false;
     });
+    const toggleDark = useCallback(() => setDarkMode(prev => !prev), []);
     const [perfMetrics, setPerfMetrics] = useState<{ parse: string; format: string } | null>(null);
     const [realTime, setRealTime] = useState(true);
     const [errorLine, setErrorLine] = useState<number | null>(null);
@@ -286,8 +287,6 @@ export default function Playground() {
             return '';
         }
     }, [input, inputMode, outputMode, indent, useTabs, strictMode]);
-
-    const toggleDark = () => setDarkMode(prev => !prev);
 
     const base = {
         bg: darkMode ? '#1a202c' : '#ffffff',
