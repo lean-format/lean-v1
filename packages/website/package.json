@@ -6,7 +6,7 @@
   "description": "Marketing site for the LEAN format",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build:app": "next build",
     "build:prod": "next build",
     "build:test": "cross-env NODE_ENV=development next build",
     "start": "next start",
