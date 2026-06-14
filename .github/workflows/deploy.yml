@@ -22,25 +22,29 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
+          cache: 'npm'
 
-      - name: Install dependencies (Website)
-        working-directory: packages/website
-        run: npm install
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Stub WASM parser
+        run: |
+          mkdir -p packages/lean-parser-rs/pkg
+          printf '{"name":"lean-parser-rs","version":"0.1.0","types":"index.d.ts","main":"index.js"}\n' > packages/lean-parser-rs/pkg/package.json
+          printf 'export function parse(input: string): any;\nexport function initParser(): Promise<void>;\n' > packages/lean-parser-rs/pkg/index.d.ts
+          printf 'module.exports = {};\n' > packages/lean-parser-rs/pkg/index.js
+
+      - name: Build core packages
+        run: npm run build:ts
 
       - name: Build Website
-        working-directory: packages/website
-        run: npm run build:app
+        run: npm run build:app -w packages/website
         env:
           GITHUB_PAGES: 'true'
           NODE_ENV: 'production'
 
-      - name: Install dependencies (Playground)
-        working-directory: packages/playground
-        run: npm install
-
       - name: Build Playground
-        working-directory: packages/playground
-        run: npm run build:app
+        run: npm run build:app -w packages/playground
 
       - name: Prepare Deployment
         run: |
