@@ -1,5 +1,4 @@
-use std::str::Chars;
-use std::iter::Peekable;
+
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
