@@ -566,6 +566,8 @@ user.age: 30
 
 Dot notation is **disabled by default** in v2.0+. Enable with `useDotNotation: true`.
 
+> **Note:** The reference implementation emits a `console.warn` when `useDotNotation` is enabled, warning that round-trip serialization may not produce identical results.
+
 **Rationale:** Dot notation breaks the round-trip guarantee because `parse(format(data))` changes nested object structure.
 
 ---
@@ -582,9 +584,35 @@ A conforming LEAN parser MUST:
 - Support all indentation styles (2-space, 4-space, tab)
 - Reject mixed indentation
 - Normalize line endings
-- Provide clear error messages with line numbers
+- Provide clear error messages with line numbers, column numbers, and error codes
+- Include `code` field (ErrorCodeType) in every parse error
 
-### 10.2 Optional Features
+### 10.2 Error Codes
+
+Every parse error includes a structured error code for programmatic handling:
+
+| Error Code | Description |
+|-----------|-------------|
+| `UNEXPECTED_TOKEN` | Token encountered where it doesn't belong |
+| `INVALID_INDENT` | Indentation doesn't match expected level |
+| `UNEXPECTED_INDENT` | Indentation increase without child content |
+| `UNEXPECTED_DEDENT` | Dedent to a non-existent parent level |
+| `EXPECTED_KEY` | Expected a key name at current position |
+| `EXPECTED_VALUE` | Expected a value after colon or operator |
+| `EXPECTED_COLON` | Expected colon after key name |
+| `EXPECTED_IDENTIFIER` | Expected identifier for key or column name |
+| `EXPECTED_STRING` | Expected a quoted string value |
+| `EXPECTED_NUMBER` | Expected a numeric value |
+| `EXPECTED_BOOLEAN` | Expected `true` or `false` |
+| `EXPECTED_NULL` | Expected `null` value |
+| `EXPECTED_COMMA` | Expected comma separator |
+| `EXPECTED_PAREN` | Expected opening/closing parenthesis for row header |
+| `DUPLICATE_KEY` | Duplicate key found in strict mode |
+| `EXTRA_VALUE` | Extra values in row beyond header columns |
+
+Error objects include: `code`, `message`, `line`, `column`, `snippet`, and `suggestion`.
+
+### 10.3 Optional Features
 
 A conforming LEAN parser MAY:
 - Provide strict mode (reject extra row values, duplicate keys)
@@ -594,19 +622,20 @@ A conforming LEAN parser MAY:
 - Support streaming parsing
 - Support dot notation for serialization
 
-### 10.3 Error Handling
+### 10.4 Error Handling
 
 Parsers should report errors with:
-- Line number
-- Column number (if available)
-- Clear description of the error
-- Code snippet with error location
-- Suggestion for fixing (if applicable)
+- Error code (`code`): Machine-readable error identifier (see §10.2)
+- Line number (`line`): 1-indexed line number
+- Column number (`column`): 1-indexed column number (if available)
+- Message (`message`): Clear description of the error
+- Snippet (`snippet`): Code snippet showing error location
+- Suggestion (`suggestion`): Fix suggestion (if applicable)
 
 **Example error:**
 ```
 
-Error at line 5, column 8:
+Error [UNEXPECTED_TOKEN] at line 5, column 8:
   Expected value after colon, found newline
 
   4 | user:
@@ -684,7 +713,18 @@ ids(value):
 }
 ```
 
-### 12.5 All Missing Values
+### 12.5 DoS Protection Limits
+
+Parsers **should** implement configurable limits to prevent denial-of-service attacks:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `maxDepth` | 100 | Maximum nesting depth to prevent stack overflow |
+| `maxInputSize` | 0 (unlimited) | Maximum input size in bytes (`0` = unlimited) |
+
+When a limit is exceeded, parsers should produce an error with code `EXPECTED_VALUE` (for depth) or reject oversized input before parsing.
+
+### 12.6 All Missing Values
 
 ```lean
 records(a, b, c):
@@ -738,8 +778,11 @@ parse(input: string, options?: ParseOptions): object
 // Format object -> LEAN string
 format(data: object, options?: FormatOptions): string
 
-// Validate LEAN
+// Validate LEAN (accumulates all errors)
 validate(input: string, options?: ParseOptions): ValidationResult
+
+// Validate LEAN (throws on first error)
+validateStrict(input: string, options?: ParseOptions): void
 
 // Query data by path
 query(data: object, path: string): QueryResult
@@ -749,8 +792,23 @@ diff(a: object, b: object): DiffEntry[]
 formatDiff(entries: DiffEntry[]): string
 
 // Schema validation
+SchemaValidator: class
 validateSchema(data: object, schema: LeanSchema): boolean
 generateSchema(data: object): LeanSchema
+
+// WASM parser management
+initParser(): Promise<void>
+isWasmAvailable(): boolean
+getWasmError(): Error | null
+
+// Pure JS parser access
+JsLeanParser: class
+
+// Error types
+ErrorCode: enum (24 codes)
+ErrorCodeType: string type alias
+LeanParseError: class (code, message, line, column, snippet, suggestion)
+LeanSerializeError: class
 ```
 
 ### 14.3 CLI Commands
@@ -780,22 +838,21 @@ lean schema file.lean
 # Initialize a new LEAN project
 lean init my-project
 
-# Compile LEAN to JSON
+# Compile LEAN to JSON/YAML/TOML
 lean compile file.lean
-
-# Convert JSON to LEAN (alias for format)
-lean convert input.json -o output.lean
 ```
 
 ### 14.4 Format Options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `indent` | number | 2 | Spaces per indent level |
-| `useDotNotation` | boolean | false | Use dot notation for nested keys |
+| `indent` | string/number | 2 | Spaces per indent level |
+| `useDotNotation` | boolean | false | Use dot notation for nested keys (emits console warning when enabled) |
 | `sortKeys` | boolean | false | Sort object keys alphabetically |
 | `rowThreshold` | number | 4 | Min items for row syntax conversion |
 | `strict` | boolean | false | Enable strict mode |
+| `maxDepth` | number | 100 | Max nesting depth for parse |
+| `maxInputSize` | number | 0 | Max input bytes (`0` = unlimited) |
 
 ---
 
@@ -876,7 +933,7 @@ Infers a JSON Schema from sample LEAN data. Detects object structure, array item
 
 ### B.4 Project Initialization (`lean init`)
 
-Creates a new directory with a `lean.json` config file and example `.lean` files for getting started.
+Creates a sample `.lean` file with example data to help new users get started with the format.
 
 ---
 

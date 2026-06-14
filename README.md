@@ -1,6 +1,6 @@
 # LEAN Format
 
-[![npm version](https://badge.fury.io/js/lean-format.svg)](https://www.npmjs.com/package/@lean-format/core)
+[![npm version](https://badge.fury.io/js/@lean-format%2fcore.svg)](https://www.npmjs.com/package/@lean-format/core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **LEAN** (Lightweight Efficient Adaptive Notation) is a minimal, human-readable data interchange format that combines the flexibility of JSON with the compactness of tabular data.
@@ -19,40 +19,19 @@
 ### Installation
 
 ```bash
-npm install lean-format
+npm install @lean-format/core
 ```
 
-### Tools
-
-### Zero-Shot AI Schema Validation (`lean enforce`)
-JSON Schema is massive, complex, and brittle. LEAN eliminates the need for schema files entirely. 
-You can validate a `.lean` file against **plain English rules** using the embedded LLM integration:
+### CLI Tool
 
 ```bash
-lean enforce data.lean --rules "All users must be over 18. All emails must end in @company.com."
-```
-The CLI parses the data, securely validates it against the logic via Gemini, and returns precise validation errors.
-
-### Universal Config Compiler (`lean compile`)
-Write your configuration once in `.lean`, and compile it to JSON, YAML, TOML, and `.env` formats instantly.
-
-```bash
-lean compile config.lean
-# Outputs: config.json, config.yaml, config.toml, config.env
-```
-
-### Lore
-[Lore](https://github.com/lore-cli/lore) is a CLI tool that uses LEAN format to capture decision context in your codebase. It's the official reference implementation for LEAN.
-
-```bash
-lore init --format lean
-lore add
+npm install -g @lean-format/cli
 ```
 
 ### Usage
 
 ```javascript
-import { parse, format } from 'lean-format';
+import { parse, format } from '@lean-format/core';
 
 // Parse LEAN to JavaScript
 const leanData = `
@@ -84,7 +63,7 @@ console.log(data);
 
 ## 🔗 Ecosystem
 
-- **[Core Library](./lean-format-npm)**: The reference JavaScript implementation.
+- **[Core Library](https://www.npmjs.com/package/@lean-format/core)**: The reference JavaScript implementation.
 - **[CLI Tool](./packages/cli)**: Command-line interface for converting and validating LEAN files.
 - **[VS Code Extension](./packages/vscode)**: Syntax highlighting and snippets for Visual Studio Code.
 
@@ -100,11 +79,11 @@ echo '{"name":"Alice","age":30}' | lean format
 # Chain with other tools
 curl api.example.com/data.json | lean format | tee output.lean
 
+# Validate with strict mode
+  lean validate data.lean --strict        # Validate with strict mode
+
 # Compile to multiple formats
   lean compile config.lean                # Output JSON/YAML/TOML/.env
-  lean validate data.lean --strict        # Validate with strict mode
-  lean enforce data.lean --rules="..."    # AI Semantic validation
-  lean watch data.lean                    # Auto-convert on changes
 ```
 
 ### TypeScript Support

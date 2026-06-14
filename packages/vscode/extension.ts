@@ -98,9 +98,11 @@ export function activate(context: vscode.ExtensionContext) {
 
     const text = document.getText();
     const diagnostics: vscode.Diagnostic[] = [];
+    const cfg = vscode.workspace.getConfiguration('lean');
+    const strict = cfg.get('validate.strict', false);
 
     try {
-      const result = validate(text);
+      const result = validate(text, { strict });
       if (!result.valid) {
         for (const err of result.errors) {
           const line = err.line ? Math.max(0, err.line - 1) : 0;

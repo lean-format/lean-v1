@@ -336,13 +336,13 @@ export default function Page() {
                     <div className="install-step">
                         <h3>1. Installation</h3>
                         <div className="install-command">
-                            <code>npm install lean-format</code>
+                            <code>npm install @lean-format/core</code>
                             <button
                                 className="copy-btn"
-                                onClick={() => copyToClipboard('npm install lean-format')}
+                                onClick={() => copyToClipboard('npm install @lean-format/core')}
                                 aria-label="Copy install command"
                             >
-                                {copiedText === 'npm install lean-format' ? '✅' : '📋'}
+                                {copiedText === 'npm install @lean-format/core' ? '✅' : '📋'}
                             </button>
                         </div>
                     </div>
@@ -352,7 +352,7 @@ export default function Page() {
                         <div className="code-block">
                             <pre>
                                 <code>
-                                    <span className="keyword">const</span> {`{ parse, format } = `}<span className="keyword">require</span>(<span className="string">'lean-format'</span>);{'\n\n'}
+                                    <span className="keyword">const</span> {`{ parse, format } = `}<span className="keyword">require</span>(<span className="string">'@lean-format/core'</span>);{'\n\n'}
                                     <span className="comment">// Parse LEAN to JavaScript</span>{'\n'}
                                     <span className="keyword">const</span> {` data = parse(`}<span className="string">{`\`
 users(id, name, age):
@@ -405,7 +405,16 @@ console.log(lean);`}
                             rel="noopener noreferrer"
                             className="btn btn-outline"
                         >
-                            View API
+                            Integration Guide
+                        </a>
+                        <a
+                            href="https://github.com/lean-format/lean-v1/blob/main/SPECIFICATION.md#142-api"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-outline"
+                            style={{ marginLeft: '0.5rem' }}
+                        >
+                            API Reference
                         </a>
                     </div>
                     <div className="doc-card">
@@ -453,7 +462,7 @@ console.log(lean);`}
                     </div>
                 </div>
                 <div className="footer-bottom">
-                    <p>© 2025 LEAN Format. Released under the MIT License.</p>
+                    <p>© 2026 LEAN Format. Released under the MIT License.</p>
                     <p>Made with ❤️ by the LEAN Format Team</p>
                 </div>
             </footer>

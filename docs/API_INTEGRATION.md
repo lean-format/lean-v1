@@ -418,6 +418,24 @@ paths:
 
 ---
 
+### Error Handling with Error Codes
+
+```javascript
+import { parse, ErrorCode } from '@lean-format/core';
+
+try {
+  const data = parse(input);
+} catch (error) {
+  if (error.code === ErrorCode.UNEXPECTED_TOKEN) {
+    // Handle unexpected token specifically
+    console.error(`Parse error at line ${error.line}: ${error.message}`);
+  }
+  // All errors include: code, message, line, column, snippet, suggestion
+}
+```
+
+---
+
 ## Performance Considerations
 
 ### Caching Parsed Results
@@ -435,7 +453,9 @@ function parseCached(leanText) {
 }
 ```
 
-### Streaming Large Payloads
+### Streaming Large Payloads (Future)
+> Streaming parsing is not yet supported by the reference implementation. This example shows the intended future API.
+
 ```javascript
 import { Readable } from 'stream';
 
