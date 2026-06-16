@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Python reference implementation (`src/lean/` in oneroute) with:
+  - Inline objects/arrays value syntax (`{a: 1}`, `[1, 2]`)
+  - Dot-notation expansion (`ParseOptions(expand_dot_notation=True)`)
+  - Dots in key names (`com.example.key: value`)
+  - Dash-only list items (bare `-` with indented children)
+  - WebSocket codec for compact location encoding
+  - `LeanResponse` / `LeanableResponse` HTTP helpers
+  - Contract schema validation (<code>contracts/*.lean</code>)
+
 ## [2.0.0] - 2026-06-14
 
 ### Added

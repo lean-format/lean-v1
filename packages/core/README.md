@@ -278,7 +278,7 @@ const data = parse(input, { strict: true });
 - **CLI Tool** - Command-line converter (included)
 - **VS Code Extension** - Syntax highlighting
 - **Online Playground** - Interactive converter
-- **Python Parser** - Coming soon
+- **Python Parser** - Available (`src/lean/` in oneroute) — inline objects/arrays, dot-notation expansion, WebSocket codec, HTTP response helpers
 - **Go Parser** - Coming soon
 
 ## 📚 Resources

@@ -102,102 +102,39 @@ app.post('/api/users', (req, res) => {
 
 ---
 
-## Python/Flask Integration
+## Python Integration
 
-### Using subprocess (CLI)
+> **Note:** A native Python implementation exists at `src/lean/` in the [oneroute](https://github.com/anomalyco/oneroute) repo. It supports all core LEAN features plus inline objects/arrays, dot-notation expansion, WebSocket codec, and HTTP response helpers. All examples below use the native library — no `subprocess` needed.
+
+### Python/Flask
+
 ```python
 from flask import Flask, request, Response
-import subprocess
-import json
+from src.lean import parse, format
 
 app = Flask(__name__)
-
-def lean_to_dict(lean_text):
-    """Convert LEAN text to Python dict using CLI"""
-    result = subprocess.run(
-        ['lean', 'parse'],
-        input=lean_text,
-        capture_output=True,
-        text=True
-    )
-    if result.returncode != 0:
-        raise ValueError(f"LEAN parse error: {result.stderr}")
-    return json.loads(result.stdout)
-
-def dict_to_lean(data):
-    """Convert Python dict to LEAN text using CLI"""
-    result = subprocess.run(
-        ['lean', 'format'],
-        input=json.dumps(data),
-        capture_output=True,
-        text=True
-    )
-    return result.stdout
-
-@app.route('/api/users', methods=['POST'])
-def create_user():
-    # Parse LEAN request
-    lean_data = request.get_data(as_text=True)
-    try:
-        user_data = lean_to_dict(lean_data)
-    except ValueError as e:
-        return {'error': str(e)}, 400
-    
-    # Process user...
-    result = {'id': 1, **user_data}
-    
-    # Return LEAN response
-    return Response(
-        dict_to_lean(result),
-        mimetype='application/lean'
-    )
-```
-
-### Using Python Package (Future)
-```python
-# Coming soon: pip install lean-format
-from lean_format import parse, format
 
 @app.route('/api/users', methods=['POST'])
 def create_user():
     user_data = parse(request.get_data(as_text=True))
-    result = process_user(user_data)
+    result = {'id': 1, **user_data}
     return Response(format(result), mimetype='application/lean')
 ```
 
----
-
-## FastAPI Integration
+### Python/FastAPI (with ?format=lean support)
 
 ```python
 from fastapi import FastAPI, Request, Response
-import subprocess
-import json
+from src.lean import parse, format, LeanableResponse
 
 app = FastAPI()
 
-async def parse_lean(request: Request) -> dict:
-    body = await request.body()
-    result = subprocess.run(
-        ['lean', 'parse'],
-        input=body.decode(),
-        capture_output=True,
-        text=True
-    )
-    return json.loads(result.stdout)
-
-@app.post("/api/users")
-async def create_user(request: Request):
-    if request.headers.get('content-type') == 'application/lean':
-        user_data = await parse_lean(request)
-    else:
-        user_data = await request.json()
-    
-    # Process...
-    return Response(
-        content=dict_to_lean(user_data),
-        media_type="application/lean"
-    )
+@app.get("/api/items")
+async def get_items(format: str = "json"):
+    data = {"items": [{"id": 1, "name": "Alice"}]}
+    if format == "lean":
+        return Response(content=format(data), media_type="text/x-lean")
+    return data
 ```
 
 ---

@@ -557,16 +557,16 @@ users(id, name):
 
 ### 9.3 Dot Notation (Optional)
 
-Serializers **may** support dot notation as an explicit opt-in:
+Parsers **may** support dot notation expansion as an explicit opt-in:
 
 ```lean
 user.name: Alice
 user.age: 30
 ```
 
-Dot notation is **disabled by default** in v2.0+. Enable with `useDotNotation: true`.
+Dot notation is **disabled by default** in v2.0+. Enable with `useDotNotation: true` (TypeScript) or `ParseOptions(expand_dot_notation=True)` (Python).
 
-> **Note:** The reference implementation emits a `console.warn` when `useDotNotation` is enabled, warning that round-trip serialization may not produce identical results.
+> **Note:** The reference implementation emits a `console.warn` when `useDotNotation` is enabled, warning that round-trip serialization may not produce identical results. The Python implementation uses `expand_dot_notation=False` by default for the same reason.
 
 **Rationale:** Dot notation breaks the round-trip guarantee because `parse(format(data))` changes nested object structure.
 
@@ -761,15 +761,40 @@ records(a, b, c):
 
 ---
 
-## 14. Reference Implementation (v2.0+)
+## 14. Reference Implementations
 
-### 14.1 Architecture
+### 14.1 TypeScript / JavaScript (v2.0+)
 
-The reference implementation has a dual-parser architecture:
+Architecture: dual-parser
 - **Rust/WASM parser** — high-performance, compiled via wasm-pack
 - **Pure TypeScript parser** — automatic fallback when WASM is unavailable
 
-### 14.2 API
+### 14.2 Python (v1.0+) — `src/lean/` in oneroute
+
+A pure-Python implementation using the stdlib only. Supports all core features plus:
+
+- **Inline objects/arrays**: `{a: 1, b: 2}` and `[1, 2, 3]` as value syntax after colons
+- **Dot-notation expansion**: `ParseOptions(expand_dot_notation=True)` for dotted keys
+- **Dots in keys**: Key regex allows `[a-zA-Z_$][a-zA-Z0-9_$.-]*`
+- **Dash-only list items**: Bare `-` with indented children emits `LIST_ITEM` token
+- **WebSocket codec**: `encode_location`, `encode_locations_batch`, `encode_location_binary`, `decode_location_binary` for compact binary/text LEAN frames
+- **HTTP response helper**: `LeanResponse` returns `text/x-lean`; `LeanableResponse.resolve()` switches between JSON and LEAN based on `?format=lean` query param
+- **Contract schemas**: `.lean` files in `contracts/` define expected API response shapes
+
+```python
+from src.lean import parse, format, validate, query, diff, generate_schema
+from src.lean.response import LeanResponse, LeanableResponse
+from src.lean.websocket_codec import encode_location, encode_location_binary
+
+# Parse with options
+data = parse(input_str, ParseOptions(expand_dot_notation=True))
+
+# WebSocket encoding
+frame = encode_location(lat=6.4541, lng=3.4218, heading=90, speed=45)
+binary = encode_location_binary(lat=6.4541, lng=3.4218)
+```
+
+### 14.3 TypeScript API
 
 ```typescript
 // Parse LEAN string -> object
@@ -811,7 +836,7 @@ LeanParseError: class (code, message, line, column, snippet, suggestion)
 LeanSerializeError: class
 ```
 
-### 14.3 CLI Commands
+### 14.4 CLI Commands
 
 ```bash
 # Parse and output as JSON
@@ -842,7 +867,7 @@ lean init my-project
 lean compile file.lean
 ```
 
-### 14.4 Format Options
+### 14.5 Format Options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -861,11 +886,12 @@ lean compile file.lean
 ### 15.1 Potential Extensions
 
 - **Multi-line strings** — heredoc syntax
-- **Inline lists** — `tags: [a, b, c]`
 - **Type hints** — `age:int: 30`
 - **Anchors/references** — YAML-style `&` and `*`
 - **Binary data** — Base64 with type hint
 - **HTTP serve mode** — `lean serve` for API-like functionality
+
+> **Note:** Inline lists (`tags: [a, b, c]`) and inline objects (`config: {key: val}`) are no longer "future" — they are implemented in the Python reference implementation and considered a stable extension to the v2.0 spec.
 
 ### 15.2 Versioning
 
@@ -879,6 +905,7 @@ Key changes from 1.0:
 - Strict mode expanded to cover duplicate keys
 - Added formal CLI specification
 - Dual Rust/TypeScript parser architecture
+- Python reference implementation with inline objects/arrays, WebSocket codec, and HTTP response helpers
 
 ---
 

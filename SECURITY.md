@@ -6,7 +6,8 @@ We take security seriously for all supported versions of LEAN Format. Please ens
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.x.x   | :white_check_mark: |
+| 2.x.x   | :white_check_mark: |
+| 1.x.x   | :x:                |
 | < 1.0.0 | :x:                |
 
 ## Reporting a Vulnerability
