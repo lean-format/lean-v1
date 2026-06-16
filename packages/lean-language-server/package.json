@@ -1,6 +1,6 @@
 {
   "name": "@lean-format/language-server",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Language Server Protocol implementation for LEAN Format",
   "type": "module",
   "main": "dist/server.js",
@@ -18,7 +18,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@lean-format/core": "^2.0.0",
+    "@lean-format/core": "^2.1.0",
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.12"
   },

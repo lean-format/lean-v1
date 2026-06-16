@@ -2,7 +2,7 @@
   "name": "lean-format-vscode",
   "displayName": "LEAN Format Support",
   "description": "Syntax highlighting, formatting, and validation for LEAN (Lightweight Efficient Adaptive Notation) format",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "author": "LEAN Format Team",
   "publisher": "lean-format",
   "icon": "images/icon.png",
@@ -14,17 +14,37 @@
   "engines": {
     "vscode": "^1.80.0"
   },
-  "categories": ["Programming Languages", "Formatters", "Linters"],
-  "keywords": ["lean", "data", "format", "notation", "syntax"],
-  "activationEvents": ["onLanguage:lean"],
+  "categories": [
+    "Programming Languages",
+    "Formatters",
+    "Linters"
+  ],
+  "keywords": [
+    "lean",
+    "data",
+    "format",
+    "notation",
+    "syntax"
+  ],
+  "activationEvents": [
+    "onLanguage:lean"
+  ],
   "contributes": {
     "languages": [
       {
         "id": "lean",
-        "aliases": ["LEAN", "lean"],
-        "extensions": [".lean"],
+        "aliases": [
+          "LEAN",
+          "lean"
+        ],
+        "extensions": [
+          ".lean"
+        ],
         "configuration": "./language-configuration.json",
-        "icon": { "light": "./images/icon-light.png", "dark": "./images/icon-dark.png" }
+        "icon": {
+          "light": "./images/icon-light.png",
+          "dark": "./images/icon-dark.png"
+        }
       }
     ],
     "grammars": [
@@ -35,7 +55,10 @@
       }
     ],
     "snippets": [
-      { "language": "lean", "path": "./snippets/lean.json" }
+      {
+        "language": "lean",
+        "path": "./snippets/lean.json"
+      }
     ],
     "commands": [
       {
@@ -53,7 +76,10 @@
         "lean.format.indentSize": {
           "type": "number",
           "default": 2,
-          "enum": [2, 4],
+          "enum": [
+            2,
+            4
+          ],
           "description": "Number of spaces for indentation"
         },
         "lean.format.useRowSyntax": {
@@ -105,7 +131,7 @@
   },
   "devDependencies": {
     "@types/vscode": "^1.80.0",
-    "@lean-format/core": "^2.0.0",
+    "@lean-format/core": "^2.1.0",
     "esbuild": "^0.25.4",
     "vsce": "^2.15.0"
   }

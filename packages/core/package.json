@@ -1,6 +1,6 @@
 {
   "name": "@lean-format/core",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "LEAN (Lightweight Efficient Adaptive Notation) - A minimal, human-readable data interchange format",
   "type": "module",
   "main": "./dist/index.js",
