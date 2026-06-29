@@ -3,21 +3,39 @@ import { JsLeanParser } from './js-parser.js';
 import type { ParseOptions } from './types.js';
 
 type WasmParseFn = (input: string, strict: boolean | null) => unknown;
+type WasmParseWithLimitsFn = (
+  input: string,
+  strict: boolean | null,
+  maxDepth: number | null,
+  maxInputSize: number | null,
+) => unknown;
 
 let wasmParse: WasmParseFn | null = null;
+let wasmParseWithLimits: WasmParseWithLimitsFn | null = null;
 let wasmError: Error | null = null;
 let wasmLoading: Promise<void> | null = null;
+
+const isBrowser = typeof window !== 'undefined' || typeof self !== 'undefined' || typeof globalThis !== 'undefined' && (globalThis as any).Window !== undefined;
 
 /**
  * Try to load the WASM parser module.
  * Silently falls back to the JS parser if WASM is unavailable.
+ * In browser environments, uses a conditional import that bundlers can handle.
  */
 async function loadWasmParser(): Promise<void> {
   if (wasmParse !== null || wasmError !== null) return;
 
   try {
-    const wasmModule = await import('lean-parser-rs');
+    let wasmModule: any;
+    if (isBrowser) {
+      // Browser: use a dynamic import that bundlers can intercept
+      // Bundlers like webpack/vite handle .wasm imports via plugins
+      wasmModule = await import(/* webpackIgnore: true */ 'lean-parser-rs');
+    } else {
+      wasmModule = await import('lean-parser-rs');
+    }
     wasmParse = wasmModule.parse as WasmParseFn;
+    wasmParseWithLimits = (wasmModule.parse_with_limits as WasmParseWithLimitsFn) || null;
   } catch (err) {
     wasmError = err instanceof Error ? err : new Error(String(err));
   }
@@ -85,6 +103,8 @@ export function parse(input: string, options: ParseOptions = {}): unknown {
   }
 
   const strict = options.strict ?? false;
+  const maxDepth = options.maxDepth ?? null;
+  const maxInputSize = options.maxInputSize ?? null;
 
   // Auto-init WASM in background on first use
   ensureWasmInit();
@@ -92,6 +112,9 @@ export function parse(input: string, options: ParseOptions = {}): unknown {
   if (typeof wasmParse === 'function') {
     validateInput(input, options);
     try {
+      if (typeof wasmParseWithLimits === 'function') {
+        return wasmParseWithLimits(input, strict, maxDepth, maxInputSize);
+      }
       return wasmParse(input, strict);
     } catch (err) {
       if (err instanceof LeanParseError) throw err;
@@ -108,7 +131,6 @@ export function parse(input: string, options: ParseOptions = {}): unknown {
 
 /**
  * Parse LEAN synchronously.
- * First checks if WASM is available synchronously; if not, uses JS parser.
  */
 export function parseSync(input: string, options: ParseOptions = {}): unknown {
   return parse(input, options);

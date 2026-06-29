@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **ParseCache** — LRU cache with content-hash keys for faster repeated parsing
+- **IncrementalParser** — differential parser that re-parses only changed top-level blocks
+- **Semantic analysis** — `analyze()` and `formatWarnings()` detect type inconsistencies, trailing commas, mixed indentation, and suspicious `$ref` values
 - Python reference implementation (`src/lean/` in oneroute) with:
   - Inline objects/arrays value syntax (`{a: 1}`, `[1, 2]`)
   - Dot-notation expansion (`ParseOptions(expand_dot_notation=True)`)

@@ -14,7 +14,7 @@ async function main() {
     sourcesContent: false,
     platform: 'node',
     outfile: 'dist/extension.js',
-    external: ['vscode', 'lean-parser-rs'],
+    external: ['vscode'],
     logLevel: 'silent',
   });
 

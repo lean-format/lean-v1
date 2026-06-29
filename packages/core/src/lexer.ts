@@ -1,13 +1,10 @@
 import { Token, TokenType, TokenValueType } from './types.js';
 import { LeanParseError } from './errors.js';
 
-/**
- * Pure TypeScript LEAN lexer (tokenizer).
- * Used as a fallback when the WASM parser is unavailable.
- */
 export class LeanLexer {
   private input: string;
   private pos: number;
+  private len: number;
   public line: number;
   public column: number;
   private indentStack: number[];
@@ -19,6 +16,7 @@ export class LeanLexer {
     const normalized = input.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     this.input = normalized;
     this.pos = 0;
+    this.len = normalized.length;
     this.line = 1;
     this.column = 1;
     this.indentStack = [0];
@@ -28,302 +26,299 @@ export class LeanLexer {
   }
 
   tokenize(): Token[] {
-    while (this.pos < this.input.length) {
-      const ch = this.peek();
+    const input = this.input;
+    const len = this.len;
+    const tokens = this.tokens;
+    let pos = this.pos;
+    let line = this.line;
+    let col = this.column;
+
+    while (pos < len) {
+      const ch = input[pos];
 
       if (ch === '\n') {
-        this.addToken(TokenType.Newline, { kind: 'string', value: '\n' });
-        this.advance();
-        this.line++;
-        this.column = 1;
+        tokens.push({ type: TokenType.Newline, value: kNlTok, line, column: col });
+        pos++;
+        line++;
+        col = 1;
         this.indentationHandled = false;
         continue;
       }
 
-      if (this.column === 1 && !this.indentationHandled) {
-        this.handleIndentation();
+      // Only check indentation at start of line (column === 1)
+      if (col === 1 && !this.indentationHandled) {
+        const result = this.handleIndentation(input, len, pos, line, col);
+        pos = result.pos;
+        col = result.col;
         this.indentationHandled = true;
-        if (this.pos >= this.input.length) break;
+        if (pos >= len) break;
         continue;
       }
 
       if (ch === ' ' || ch === '\t') {
-        this.advance();
+        pos++;
+        col++;
         continue;
       }
 
       if (ch === '#') {
-        this.skipComment();
+        while (pos < len && input[pos] !== '\n') pos++;
+        col = 1;
         continue;
       }
 
       if (ch === ':') {
-        this.addToken(TokenType.Colon, { kind: 'string', value: ':' });
-        this.advance();
+        tokens.push({ type: TokenType.Colon, value: kNlTok, line, column: col });
+        pos++;
+        col++;
         continue;
       }
 
       if (ch === '-') {
-        if (this.isNextDigit()) {
-          this.readNumber();
+        if (pos + 1 < len && input[pos + 1] >= '0' && input[pos + 1] <= '9') {
+          const result = this.readNumber(input, len, pos, line, col, tokens);
+          pos = result.pos;
+          col = result.col;
         } else {
-          this.addToken(TokenType.Hyphen, { kind: 'string', value: '-' });
-          this.advance();
+          tokens.push({ type: TokenType.Hyphen, value: kNlTok, line, column: col });
+          pos++;
+          col++;
         }
         continue;
       }
 
       if (ch === ',') {
-        this.addToken(TokenType.Comma, { kind: 'string', value: ',' });
-        this.advance();
+        tokens.push({ type: TokenType.Comma, value: kNlTok, line, column: col });
+        pos++;
+        col++;
         continue;
       }
 
       if (ch === '(') {
-        this.addToken(TokenType.LParen, { kind: 'string', value: '(' });
-        this.advance();
+        tokens.push({ type: TokenType.LParen, value: kNlTok, line, column: col });
+        pos++;
+        col++;
         continue;
       }
 
       if (ch === ')') {
-        this.addToken(TokenType.RParen, { kind: 'string', value: ')' });
-        this.advance();
+        tokens.push({ type: TokenType.RParen, value: kNlTok, line, column: col });
+        pos++;
+        col++;
         continue;
       }
 
       if (ch === '{') {
-        this.addToken(TokenType.LBrace, { kind: 'string', value: '{' });
-        this.advance();
+        tokens.push({ type: TokenType.LBrace, value: kNlTok, line, column: col });
+        pos++;
+        col++;
         continue;
       }
 
       if (ch === '}') {
-        this.addToken(TokenType.RBrace, { kind: 'string', value: '}' });
-        this.advance();
+        tokens.push({ type: TokenType.RBrace, value: kNlTok, line, column: col });
+        pos++;
+        col++;
         continue;
       }
 
       if (ch === '[') {
-        this.addToken(TokenType.LBracket, { kind: 'string', value: '[' });
-        this.advance();
+        tokens.push({ type: TokenType.LBracket, value: kNlTok, line, column: col });
+        pos++;
+        col++;
         continue;
       }
 
       if (ch === ']') {
-        this.addToken(TokenType.RBracket, { kind: 'string', value: ']' });
-        this.advance();
+        tokens.push({ type: TokenType.RBracket, value: kNlTok, line, column: col });
+        pos++;
+        col++;
         continue;
       }
 
       if (ch === '"') {
-        this.readString();
+        const result = this.readString(input, len, pos, line, col, tokens);
+        pos = result.pos;
+        col = result.col;
         continue;
       }
 
-      if (isDigit(ch)) {
-        this.readNumber();
+      if (ch >= '0' && ch <= '9') {
+        const result = this.readNumber(input, len, pos, line, col, tokens);
+        pos = result.pos;
+        col = result.col;
         continue;
       }
 
-      if (isIdentifierStart(ch)) {
-        this.readIdentifier();
+      if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '_' || ch === '$') {
+        const result = this.readIdentifier(input, len, pos, line, col, tokens);
+        pos = result.pos;
+        col = result.col;
         continue;
       }
 
+      const snippet = input.slice(Math.max(0, pos - 20), Math.min(len, pos + 20)).replace(/\n/g, '\\n');
       throw new LeanParseError(
         `Unexpected character '${ch}'`,
-        this.line,
-        this.column,
-        this.getSnippet(),
+        line, col, snippet,
       );
     }
 
+    this.pos = pos;
+    this.line = line;
+    this.column = col;
+
     while (this.indentStack.length > 1) {
       this.indentStack.pop();
-      this.addToken(TokenType.Dedent, { kind: 'string', value: '' });
+      tokens.push({ type: TokenType.Dedent, value: kNlTok, line, column: col });
     }
 
-    this.addToken(TokenType.Eof, { kind: 'string', value: '' });
-    return this.tokens;
+    tokens.push({ type: TokenType.Eof, value: kNlTok, line, column: col });
+    return tokens;
   }
 
-  private handleIndentation(): void {
+  private handleIndentation(input: string, len: number, pos: number, line: number, col: number): { pos: number; col: number } {
     let indentLevel = 0;
-    let currentPos = this.pos;
+    const start = pos;
 
-    while (currentPos < this.input.length) {
-      const ch = this.input[currentPos];
+    while (pos < len) {
+      const ch = input[pos];
       if (ch === ' ' || ch === '\t') {
         if (this.indentChar === null) {
           this.indentChar = ch;
         } else if (ch !== this.indentChar) {
           throw new LeanParseError(
             'Mixed indentation (spaces and tabs)',
-            this.line,
-            this.column,
-            this.getSnippet(),
-            'Use consistent indentation — either spaces or tabs, not both.',
+            line, col, input.slice(Math.max(0, start - 20), Math.min(len, start + 20)).replace(/\n/g, '\\n'),
           );
         }
         indentLevel += ch === '\t' ? 4 : 1;
       } else {
         break;
       }
-      currentPos++;
+      pos++;
     }
 
-    if (currentPos >= this.input.length || this.input[currentPos] === '\n' || this.input[currentPos] === '#') {
-      const indentLength = currentPos - this.pos;
-      this.pos = currentPos;
-      this.column += indentLength;
-      return;
+    if (pos >= len || input[pos] === '\n' || input[pos] === '#') {
+      col += (pos - start);
+      return { pos, col };
     }
 
-    const currentIndent = this.indentStack[this.indentStack.length - 1];
+    const stack = this.indentStack;
+    const currentIndent = stack[stack.length - 1];
 
     if (indentLevel > currentIndent) {
-      this.indentStack.push(indentLevel);
-      this.addToken(TokenType.Indent, { kind: 'number', value: indentLevel });
+      stack.push(indentLevel);
+      this.tokens.push({ type: TokenType.Indent, value: kNlTok, line, column: col });
     } else if (indentLevel < currentIndent) {
-      while (this.indentStack.length > 1 && this.indentStack[this.indentStack.length - 1] > indentLevel) {
-        this.indentStack.pop();
-        this.addToken(TokenType.Dedent, { kind: 'string', value: '' });
+      while (stack.length > 1 && stack[stack.length - 1] > indentLevel) {
+        stack.pop();
+        this.tokens.push({ type: TokenType.Dedent, value: kNlTok, line, column: col });
       }
     }
 
-    const indentLength = currentPos - this.pos;
-    this.pos = currentPos;
-    this.column += indentLength;
+    col += (pos - start);
+    return { pos, col };
   }
 
-  private skipComment(): void {
-    while (this.pos < this.input.length && this.peek() !== '\n') {
-      this.advance();
-    }
-  }
+  private readString(input: string, len: number, startPos: number, line: number, col: number, tokens: Token[]): { pos: number; col: number } {
+    const parts: string[] = [];
+    let pos = startPos + 1; // skip opening quote
+    let localCol = col + 1;
 
-  private readString(): void {
-    let value = '';
-    this.advance(); // Skip opening quote
-
-    while (this.pos < this.input.length) {
-      const ch = this.peek();
+    while (pos < len) {
+      const ch = input[pos];
       if (ch === '"') {
-        this.advance(); // Skip closing quote
-        this.addToken(TokenType.String, { kind: 'string', value });
-        return;
+        pos++;
+        localCol++;
+        tokens.push({ type: TokenType.String, value: { kind: 'string', value: parts.join('') }, line, column: col });
+        return { pos, col: localCol };
       }
       if (ch === '\\') {
-        this.advance();
-        if (this.pos >= this.input.length) {
-          throw new LeanParseError('Unterminated string', this.line, this.column, this.getSnippet());
+        pos++;
+        localCol++;
+        if (pos >= len) {
+          throw new LeanParseError('Unterminated string', line, col);
         }
-        const escape = this.peek();
-        switch (escape) {
-          case 'n': value += '\n'; break;
-          case 'r': value += '\r'; break;
-          case 't': value += '\t'; break;
-          case '\\': value += '\\'; break;
-          case '"': value += '"'; break;
-          default: value += escape; break;
+        const esc = input[pos];
+        switch (esc) {
+          case 'n': parts.push('\n'); break;
+          case 'r': parts.push('\r'); break;
+          case 't': parts.push('\t'); break;
+          case '\\': parts.push('\\'); break;
+          case '"': parts.push('"'); break;
+          default: parts.push(esc); break;
         }
-        this.advance();
+        pos++;
+        localCol++;
       } else {
-        value += ch;
-        this.advance();
+        parts.push(ch);
+        pos++;
+        localCol++;
       }
     }
-    throw new LeanParseError('Unterminated string', this.line, this.column, this.getSnippet());
+    throw new LeanParseError('Unterminated string', line, col);
   }
 
-  private readNumber(): void {
-    let value = '';
-    if (this.peek() === '-') {
-      value += '-';
-      this.advance();
-    }
+  private readNumber(input: string, len: number, startPos: number, line: number, col: number, tokens: Token[]): { pos: number; col: number } {
+    let pos = startPos;
+    const parts: string[] = [];
+    if (input[pos] === '-') { parts.push('-'); pos++; }
 
-    while (this.pos < this.input.length) {
-      const ch = this.peek();
-      if (isDigit(ch) || ch === '.' || ch === 'e' || ch === 'E' || ch === '-' || ch === '+') {
-        if ((ch === '-' || ch === '+') && value.length > 0 && !/e|E/.test(value)) {
-          break;
-        }
-        value += ch;
-        this.advance();
+    while (pos < len) {
+      const ch = input[pos];
+      if ((ch >= '0' && ch <= '9') || ch === '.' || ch === 'e' || ch === 'E') {
+        parts.push(ch);
+        pos++;
+      } else if ((ch === '-' || ch === '+') && parts.length > 0) {
+        const last = parts[parts.length - 1];
+        if (last === 'e' || last === 'E') { parts.push(ch); pos++; }
+        else break;
       } else {
         break;
       }
     }
 
+    const value = parts.join('');
     const num = parseFloat(value);
     if (isFinite(num)) {
-      this.addToken(TokenType.Number, { kind: 'number', value: num });
-    } else {
-      throw new LeanParseError(`Invalid number format '${value}'`, this.line, this.column, this.getSnippet());
+      tokens.push({ type: TokenType.Number, value: { kind: 'number', value: num }, line, column: col });
+      return { pos, col: col + (pos - startPos) };
     }
+    throw new LeanParseError(`Invalid number format`, line, col,
+      input.slice(Math.max(0, startPos - 20), Math.min(len, startPos + 20)).replace(/\n/g, '\\n'));
   }
 
-  private readIdentifier(): void {
-    let value = '';
-    while (this.pos < this.input.length) {
-      const ch = this.peek();
-      if (isIdentifierPart(ch)) {
-        value += ch;
-        this.advance();
+  private readIdentifier(input: string, len: number, startPos: number, line: number, col: number, tokens: Token[]): { pos: number; col: number } {
+    let pos = startPos;
+    while (pos < len) {
+      const ch = input[pos];
+      if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '_' || ch === '$' ||
+          (ch >= '0' && ch <= '9') || ch === '-' || ch === '.') {
+        pos++;
       } else {
         break;
       }
     }
 
+    const value = input.slice(startPos, pos);
     switch (value) {
       case 'true':
-        this.addToken(TokenType.Boolean, { kind: 'boolean', value: true });
+        tokens.push({ type: TokenType.Boolean, value: { kind: 'boolean', value: true }, line, column: col });
         break;
       case 'false':
-        this.addToken(TokenType.Boolean, { kind: 'boolean', value: false });
+        tokens.push({ type: TokenType.Boolean, value: { kind: 'boolean', value: false }, line, column: col });
         break;
       case 'null':
-        this.addToken(TokenType.Null, { kind: 'null' });
+        tokens.push({ type: TokenType.Null, value: kNlTok, line, column: col });
         break;
       default:
-        this.addToken(TokenType.Identifier, { kind: 'string', value });
+        tokens.push({ type: TokenType.Identifier, value: { kind: 'string', value }, line, column: col });
         break;
     }
-  }
 
-  private peek(): string {
-    return this.input[this.pos];
-  }
-
-  private advance(): void {
-    this.pos++;
-    this.column++;
-  }
-
-  private addToken(type: TokenType, value: TokenValueType): void {
-    this.tokens.push({ type, value, line: this.line, column: this.column });
-  }
-
-  private isNextDigit(): boolean {
-    return this.pos + 1 < this.input.length && isDigit(this.input[this.pos + 1]);
-  }
-
-  private getSnippet(): string | undefined {
-    const start = Math.max(0, this.pos - 20);
-    const end = Math.min(this.input.length, this.pos + 20);
-    return this.input.slice(start, end).replace(/\n/g, '\\n');
+    return { pos, col: col + (pos - startPos) };
   }
 }
 
-function isDigit(ch: string): boolean {
-  return ch >= '0' && ch <= '9';
-}
-
-function isIdentifierStart(ch: string): boolean {
-  return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '_' || ch === '$';
-}
-
-function isIdentifierPart(ch: string): boolean {
-  return isIdentifierStart(ch) || isDigit(ch) || ch === '-' || ch === '.';
-}
+const kNlTok: TokenValueType = { kind: 'null' };

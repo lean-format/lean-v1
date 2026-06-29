@@ -1,8 +1,13 @@
 use serde_json::{Value, Map};
 use crate::lexer::{Lexer, Token, TokenType, TokenValue};
 
+const DEFAULT_MAX_DEPTH: usize = 100;
+const DEFAULT_MAX_INPUT_SIZE: usize = 10 * 1024 * 1024; // 10 MB
+
 pub struct LeanParser {
     strict: bool,
+    max_depth: usize,
+    max_input_size: usize,
     tokens: Vec<Token>,
     pos: usize,
 }
@@ -11,12 +16,32 @@ impl LeanParser {
     pub fn new(strict: bool) -> Self {
         Self {
             strict,
+            max_depth: DEFAULT_MAX_DEPTH,
+            max_input_size: DEFAULT_MAX_INPUT_SIZE,
+            tokens: Vec::new(),
+            pos: 0,
+        }
+    }
+
+    pub fn with_limits(strict: bool, max_depth: usize, max_input_size: usize) -> Self {
+        Self {
+            strict,
+            max_depth,
+            max_input_size,
             tokens: Vec::new(),
             pos: 0,
         }
     }
 
     pub fn parse(&mut self, input: &str) -> Result<Value, String> {
+        if input.len() > self.max_input_size {
+            return Err(format!(
+                "Input exceeds maximum size of {} bytes (got {} bytes)",
+                self.max_input_size,
+                input.len()
+            ));
+        }
+
         let mut lexer = Lexer::new(input);
         self.tokens = lexer.tokenize()?;
         self.pos = 0;
@@ -31,7 +56,16 @@ impl LeanParser {
         Ok(result)
     }
 
-    fn parse_block(&mut self, level: usize) -> Result<Value, String> {
+    fn check_depth(&self, depth: usize) -> Result<(), String> {
+        if self.max_depth > 0 && depth > self.max_depth {
+            Err(format!("Maximum nesting depth of {} exceeded", self.max_depth))
+        } else {
+            Ok(())
+        }
+    }
+
+    fn parse_block(&mut self, depth: usize) -> Result<Value, String> {
+        self.check_depth(depth)?;
         let mut obj = Map::new();
 
         while self.peek().token_type != TokenType::Eof && self.peek().token_type != TokenType::Dedent {
@@ -43,7 +77,7 @@ impl LeanParser {
                 continue;
             }
 
-            if let Some((key, val)) = self.parse_item(level)? {
+            if let Some((key, val)) = self.parse_item(depth)? {
                 Self::deep_merge(&mut obj, key, val);
             }
         }
@@ -67,7 +101,7 @@ impl LeanParser {
         }
     }
 
-    fn parse_item(&mut self, level: usize) -> Result<Option<(String, Value)>, String> {
+    fn parse_item(&mut self, depth: usize) -> Result<Option<(String, Value)>, String> {
         let key_token = self.peek().clone();
 
         if key_token.token_type == TokenType::Hyphen {
@@ -93,7 +127,7 @@ impl LeanParser {
         }
         self.advance();
 
-        let value = self.parse_value(level + 1)?;
+        let value = self.parse_value(depth + 1)?;
 
         if key.contains('.') {
             let (root_key, expanded) = Self::expand_dot_notation(&key, value);
@@ -171,18 +205,20 @@ impl LeanParser {
         }
     }
 
-    fn parse_value(&mut self, level: usize) -> Result<Value, String> {
+    fn parse_value(&mut self, depth: usize) -> Result<Value, String> {
+        self.check_depth(depth)?;
+
         if self.peek().token_type == TokenType::Newline {
             self.advance();
             if self.peek().token_type == TokenType::Indent {
                 self.advance();
 
                 if self.peek().token_type == TokenType::Hyphen {
-                    let list = self.parse_list(level)?;
+                    let list = self.parse_list(depth)?;
                     self.consume(TokenType::Dedent)?;
                     return Ok(list);
                 } else {
-                    let obj = self.parse_block(level)?;
+                    let obj = self.parse_block(depth)?;
                     self.consume(TokenType::Dedent)?;
                     return Ok(obj);
                 }
@@ -198,7 +234,8 @@ impl LeanParser {
         self.parse_simple_value()
     }
 
-    fn parse_list(&mut self, level: usize) -> Result<Value, String> {
+    fn parse_list(&mut self, depth: usize) -> Result<Value, String> {
+        self.check_depth(depth)?;
         let mut list = Vec::new();
 
         while self.peek().token_type == TokenType::Hyphen {
@@ -208,9 +245,9 @@ impl LeanParser {
                 self.advance();
                 self.consume(TokenType::Indent)?;
                 if self.peek().token_type == TokenType::Hyphen {
-                    list.push(self.parse_list(level + 1)?);
+                    list.push(self.parse_list(depth + 1)?);
                 } else {
-                    list.push(self.parse_block(level + 1)?);
+                    list.push(self.parse_block(depth + 1)?);
                 }
                 self.consume(TokenType::Dedent)?;
             } else {
@@ -221,7 +258,7 @@ impl LeanParser {
                 if is_key_value {
                     let mut item_obj = Map::new();
                     
-                    if let Some((k, v)) = self.parse_item(level)? {
+                    if let Some((k, v)) = self.parse_item(depth)? {
                         Self::deep_merge(&mut item_obj, k, v);
                     }
 
@@ -231,7 +268,7 @@ impl LeanParser {
 
                     if self.peek().token_type == TokenType::Indent {
                         self.advance();
-                        let rest_block = self.parse_block(level + 1)?;
+                        let rest_block = self.parse_block(depth + 1)?;
                         if let Value::Object(rest_map) = rest_block {
                             for (k, v) in rest_map {
                                 Self::deep_merge(&mut item_obj, k, v);

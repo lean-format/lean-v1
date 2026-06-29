@@ -829,6 +829,23 @@ getWasmError(): Error | null
 // Pure JS parser access
 JsLeanParser: class
 
+// Cache (LRU with content-hash keys)
+ParseCache: class (maxSize?: number)
+cachedParse(input: string, options?: ParseOptions, cache?: ParseCache): Promise<unknown>
+defaultCache: ParseCache
+
+// Incremental parser (re-parses only changed blocks)
+IncrementalParser: class (options?: ParseOptions)
+parseIncremental(input: string, options?: ParseOptions, parser?: IncrementalParser): Record<string, unknown>
+defaultIncrementalParser: IncrementalParser
+
+// Semantic analysis
+analyze(input: string, parsed: unknown): SemanticResult
+hasWarnings(result: SemanticResult): boolean
+formatWarnings(result: SemanticResult, colors?: boolean): string
+SemanticWarning: interface (type, path, message, suggestion?)
+SemanticResult: interface (warnings: SemanticWarning[])
+
 // Error types
 ErrorCode: enum (24 codes)
 ErrorCodeType: string type alias

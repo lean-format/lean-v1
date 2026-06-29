@@ -16,15 +16,15 @@
 ## 📦 Installation
 
 ```bash
-npm install lean-format/core
+npm install @lean-format/core
 ```
 
 ## 🚀 Quick Start
 
-### Node.js
+### Node.js (ESM)
 
 ```javascript
-const { parse, format } = require('lean-format');
+import { parse, format } from '@lean-format/core';
 
 // Parse LEAN to JavaScript
 const data = parse(`
@@ -50,7 +50,7 @@ console.log(lean);
 
 ```html
 <script type="module">
-import { parse, format } from 'https://unpkg.com/lean-format/dist/index.esm.js';
+import { parse, format } from 'https://unpkg.com/@lean-format/core/dist/index.esm.js';
 
 const data = parse('key: value');
 console.log(data);
@@ -60,7 +60,7 @@ console.log(data);
 ### Browser (UMD)
 
 ```html
-<script src="https://unpkg.com/lean-format"></script>
+<script src="https://unpkg.com/@lean-format/core"></script>
 <script>
   const { parse, format } = LEAN;
   const data = parse('key: value');
@@ -129,6 +129,60 @@ if (!result.valid) {
   result.errors.forEach(err => {
     console.error(`Line ${err.line}: ${err.message}`);
   });
+}
+```
+
+### `cachedParse(input, options?, cache?)`
+
+Parse with built-in LRU caching. Returns cached result if input + options match a prior parse.
+
+**Parameters:**
+- `input` (string) - LEAN format text
+- `options` (object) - Optional parse configuration
+- `cache` (ParseCache) - Optional custom cache instance (defaults to a shared global cache)
+
+**Returns:** Promise resolving to parsed JavaScript object
+
+**Example:**
+```javascript
+const data = await cachedParse('key: value', { strict: true });
+// Subsequent identical calls return instantly from cache
+```
+
+### `ParseCache`
+
+```javascript
+// Create with max 128 entries
+const cache = new ParseCache(128);
+cache.set('key: 1', {}, { key: 1 });
+const result = cache.get('key: 1', {});   // { key: 1 }
+const missed = cache.get('nope', {});      // undefined
+console.log(cache.stats());                // { hits, misses, evictions, size, maxSize }
+cache.clear();
+```
+
+### `IncrementalParser`
+
+Differential parser that re-parses only changed top-level blocks on update.
+
+```javascript
+const parser = new IncrementalParser();
+let doc = parser.parse('name: Alice\nage: 30');
+doc = parser.parse('name: Bob\nage: 30');   // only 'name' block re-parsed
+doc = parser.parse('name: Bob\nage: 30');   // identical — returns cached result
+parser.reset();
+```
+
+### `analyze(input, parsed)`
+
+Post-parse semantic analysis — detects type inconsistencies, trailing commas, mixed indentation, and suspicious `$ref` values.
+
+```javascript
+const data = parse(text);
+const analysis = analyze(text, data);
+if (analysis.warnings.length > 0) {
+  console.log(formatWarnings(analysis));
+  // e.g. "type-inconsistency[key.value]: has inconsistent types: string, number"
 }
 ```
 
@@ -215,20 +269,7 @@ Run `lean help` for full CLI documentation.
 ## ⚙️ TypeScript Support
 
 ```typescript
-import { parse, format, validate } from 'lean-format';
-
-interface User {
-  id: number;
-  name: string;
-  age: number;
-}
-
-const data = parse<{ users: User[] }>(`
-users(id, name, age):
-    - 1, Alice, 30
-    - 2, Bob, 25
-`);
-```
+import { parse, format, validate, ParseCache, IncrementalParser, analyze, formatWarnings } from '@lean-format/core';
 
 ## 🧪 Testing
 
@@ -271,6 +312,37 @@ const data = parse(input, { strict: true });
 // - Extra row values
 // - Duplicate keys
 // - Mixed indentation
+```
+
+### Cached Parsing
+
+```javascript
+import { cachedParse } from '@lean-format/core';
+
+const data = await cachedParse(input, { strict: true });
+// Second call with same input returns cached result instantly
+```
+
+### Incremental Parsing
+
+```javascript
+import { IncrementalParser } from '@lean-format/core';
+
+const parser = new IncrementalParser({ strict: true });
+let doc = parser.parse(initialText);
+doc = parser.parse(editedText);  // only changed blocks re-parsed
+```
+
+### Semantic Analysis
+
+```javascript
+import { analyze, formatWarnings } from '@lean-format/core';
+
+const data = parse(input, { strict: true });
+const analysis = analyze(input, data);
+for (const w of analysis.warnings) {
+  console.warn(`[${w.type}] ${w.path}: ${w.message}`);
+}
 ```
 
 ## 🔗 Ecosystem

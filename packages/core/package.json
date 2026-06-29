@@ -35,6 +35,7 @@
   "dependencies": {
     "lean-parser-rs": "file:../lean-parser-rs/pkg"
   },
+  "optionalDependencies": {},
   "devDependencies": {
     "typescript": "^5.9.3",
     "vitest": "^3.1.3",

@@ -1,15 +1,37 @@
 import * as vscode from 'vscode';
-import { parse, format, validate, initParser } from '@lean-format/core';
+import { parse, format } from '@lean-format/core';
+import {
+  LanguageClient,
+  LanguageClientOptions,
+  ServerOptions,
+  TransportKind,
+} from 'vscode-languageclient/node';
+
+let client: LanguageClient;
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log('LEAN format extension is now active');
+  // ── LSP Client ────────────────────────────────────────────────────
+  const serverModule = context.asAbsolutePath('../lean-language-server/dist/server.js');
+  const serverOptions: ServerOptions = {
+    run: { module: serverModule, transport: TransportKind.ipc },
+    debug: {
+      module: serverModule,
+      transport: TransportKind.ipc,
+      options: { execArgv: ['--inspect=6009', '--experimental-wasm-modules'] },
+    },
+  };
 
-  // Initialize parser (prefer WASM, fall back to JS)
-  initParser().catch(() => {
-    console.log('WASM parser unavailable, using JS fallback');
-  });
+  const clientOptions: LanguageClientOptions = {
+    documentSelector: [{ scheme: 'file', language: 'lean' }],
+    synchronize: {
+      configurationSection: 'lean',
+    },
+  };
 
-  // ── Document formatting ──────────────────────────────────────────
+  client = new LanguageClient('lean', 'LEAN Language Server', serverOptions, clientOptions);
+  client.start();
+
+  // ── Document Formatting (direct API — faster than LSP round-trip) ─
   const formatProvider = vscode.languages.registerDocumentFormattingEditProvider('lean', {
     provideDocumentFormattingEdits(document: vscode.TextDocument) {
       try {
@@ -22,7 +44,6 @@ export function activate(context: vscode.ExtensionContext) {
           useRowSyntax: cfg.get('format.useRowSyntax', true),
           rowThreshold: cfg.get('format.rowThreshold', 4),
           sortKeys: cfg.get('format.sortKeys', false),
-          useDotNotation: cfg.get('format.useDotNotation', false),
         });
 
         const fullRange = new vscode.Range(
@@ -30,38 +51,10 @@ export function activate(context: vscode.ExtensionContext) {
           document.positionAt(text.length),
         );
         return [vscode.TextEdit.replace(fullRange, formatted)];
-      } catch (error: any) {
-        vscode.window.showErrorMessage(`LEAN format error: ${error.message}`);
+      } catch {
         return [];
       }
     },
-  });
-
-  // ── Validate command ─────────────────────────────────────────────
-  const validateCmd = vscode.commands.registerCommand('lean.validate', () => {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) return;
-    const document = editor.document;
-    if (document.languageId !== 'lean') {
-      vscode.window.showWarningMessage('This command only works with LEAN files');
-      return;
-    }
-
-    try {
-      const text = document.getText();
-      const result = validate(text);
-
-      if (result.valid) {
-        vscode.window.showInformationMessage('✓ LEAN file is valid');
-      } else {
-        const msgs = result.errors.map(e =>
-          `Line ${e.line}${e.column ? `:${e.column}` : ''}: ${e.message}${e.suggestion ? `\n  Suggestion: ${e.suggestion}` : ''}`
-        ).join('\n');
-        vscode.window.showErrorMessage(`Validation errors:\n${msgs}`);
-      }
-    } catch (error: any) {
-      vscode.window.showErrorMessage(`Validation error: ${error.message}`);
-    }
   });
 
   // ── Convert to JSON command ──────────────────────────────────────
@@ -76,9 +69,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     try {
       const text = document.getText();
-      const result = parse(text);
-      const json = JSON.stringify(result, null, 2);
-
+      const json = JSON.stringify(parse(text), null, 2);
       const jsonDoc = await vscode.workspace.openTextDocument({
         language: 'json',
         content: json,
@@ -89,67 +80,10 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  // ── Real-time diagnostics ────────────────────────────────────────
-  const diagnosticCollection = vscode.languages.createDiagnosticCollection('lean');
-  context.subscriptions.push(diagnosticCollection);
-
-  function validateDocument(document: vscode.TextDocument) {
-    if (document.languageId !== 'lean') return;
-
-    const text = document.getText();
-    const diagnostics: vscode.Diagnostic[] = [];
-    const cfg = vscode.workspace.getConfiguration('lean');
-    const strict = cfg.get('validate.strict', false);
-
-    try {
-      const result = validate(text, { strict });
-      if (!result.valid) {
-        for (const err of result.errors) {
-          const line = err.line ? Math.max(0, err.line - 1) : 0;
-          let range: vscode.Range;
-          try {
-            const lineText = document.lineAt(line);
-            range = new vscode.Range(line, 0, line, lineText.text.length);
-          } catch {
-            range = new vscode.Range(line, 0, line, 1);
-          }
-
-          const diagnostic = new vscode.Diagnostic(
-            range,
-            err.message + (err.suggestion ? ` (${err.suggestion})` : ''),
-            vscode.DiagnosticSeverity.Error,
-          );
-          diagnostics.push(diagnostic);
-        }
-      }
-    } catch (error: any) {
-      const match = error.message.match(/line (\d+)/i);
-      const line = match ? Math.max(0, parseInt(match[1]) - 1) : 0;
-      let range: vscode.Range;
-      try {
-        const lineText = document.lineAt(line);
-        range = new vscode.Range(line, 0, line, lineText.text.length);
-      } catch {
-        range = new vscode.Range(0, 0, 0, 1);
-      }
-      diagnostics.push(new vscode.Diagnostic(range, error.message, vscode.DiagnosticSeverity.Error));
-    }
-
-    diagnosticCollection.set(document.uri, diagnostics);
-  }
-
-  context.subscriptions.push(
-    vscode.workspace.onDidOpenTextDocument(validateDocument),
-    vscode.workspace.onDidChangeTextDocument(e => validateDocument(e.document)),
-    vscode.workspace.onDidCloseTextDocument(doc => diagnosticCollection.delete(doc.uri)),
-  );
-
-  // Initial validation of open documents
-  for (const doc of vscode.workspace.textDocuments) {
-    validateDocument(doc);
-  }
-
-  context.subscriptions.push(formatProvider, validateCmd, convertCmd);
+  context.subscriptions.push(formatProvider, convertCmd);
 }
 
-export function deactivate() {}
+export function deactivate(): Thenable<void> | undefined {
+  if (!client) return undefined;
+  return client.stop();
+}

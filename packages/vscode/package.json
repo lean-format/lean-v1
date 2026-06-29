@@ -62,10 +62,6 @@
     ],
     "commands": [
       {
-        "command": "lean.validate",
-        "title": "LEAN: Validate File"
-      },
-      {
         "command": "lean.convertToJson",
         "title": "LEAN: Convert to JSON"
       }
@@ -129,9 +125,12 @@
     "publish": "vsce publish --no-dependencies",
     "test": "node test.js"
   },
+  "dependencies": {
+    "@lean-format/core": "^2.1.0",
+    "vscode-languageclient": "^9.0.1"
+  },
   "devDependencies": {
     "@types/vscode": "^1.80.0",
-    "@lean-format/core": "^2.1.0",
     "esbuild": "^0.25.4",
     "vsce": "^2.15.0"
   }

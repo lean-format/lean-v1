@@ -21,6 +21,8 @@ export interface ParseOptions {
   maxInputSize?: number;
   /** Error code for programmatic error handling */
   errorCode?: string;
+  /** Use dot-notation for nested keys (parser only, default: false) */
+  useDotNotation?: boolean;
 }
 
 /** Options for the serializer */
@@ -106,26 +108,26 @@ export interface QueryResult {
 // Internal types
 // ============================================================================
 
-/** Internal LEAN token types */
+/** Internal LEAN token types (numeric for fast comparison) */
 export enum TokenType {
-  Indent = 'INDENT',
-  Dedent = 'DEDENT',
-  Newline = 'NEWLINE',
-  Identifier = 'IDENTIFIER',
-  String = 'STRING',
-  Number = 'NUMBER',
-  Boolean = 'BOOLEAN',
-  Null = 'NULL',
-  Colon = 'COLON',
-  Hyphen = 'HYPHEN',
-  Comma = 'COMMA',
-  LParen = 'LPAREN',
-  RParen = 'RPAREN',
-  LBrace = 'LBRACE',
-  RBrace = 'RBRACE',
-  LBracket = 'LBRACKET',
-  RBracket = 'RBRACKET',
-  Eof = 'EOF',
+  Indent,
+  Dedent,
+  Newline,
+  Identifier,
+  String,
+  Number,
+  Boolean,
+  Null,
+  Colon,
+  Hyphen,
+  Comma,
+  LParen,
+  RParen,
+  LBrace,
+  RBrace,
+  LBracket,
+  RBracket,
+  Eof,
 }
 
 /** Token value variants */

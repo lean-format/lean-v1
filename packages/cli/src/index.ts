@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
+import { dirname, basename, join as joinPath } from 'node:path';
 import { Command } from 'commander';
 import { parse, format, validate, diff, formatDiff, query, generateSchema, initParser } from '@lean-format/core';
 import yaml from 'js-yaml';
@@ -100,10 +101,15 @@ program
   .argument('[file]', 'LEAN file (stdin if omitted)')
   .option('--strict', 'Enable strict mode')
   .option('--format <formats>', 'Comma-separated: json,yaml,toml,env', 'json,yaml,toml,env')
+  .option('-d, --output-dir <dir>', 'Output directory (default: same as input file / cwd for stdin)')
+  .option('--force', 'Overwrite existing output files without prompting')
   .option('-q, --quiet', 'Suppress info messages')
   .action(async (file, opts) => {
     const content = file ? readFileSync(file, 'utf-8') : await readStdin();
     const baseName = file ? file.replace(/\.lean$/, '') : 'config';
+    const outDir = opts.outputDir || (file ? dirname(file) : process.cwd());
+    mkdirSync(outDir, { recursive: true });
+
     try {
       const data = parse(content, { strict: opts.strict });
       const formats = opts.format.split(',').map((f: string) => f.trim().toLowerCase());
@@ -111,21 +117,27 @@ program
       const outputs: string[] = [];
 
       const obj = data as Record<string, unknown>;
-      if (formats.includes('json')) {
-        writeFileSync(`${baseName}.json`, JSON.stringify(obj, null, 2));
-        outputs.push(`${baseName}.json`);
-      }
-      if (formats.includes('yaml')) {
-        writeFileSync(`${baseName}.yaml`, toYaml(obj));
-        outputs.push(`${baseName}.yaml`);
-      }
-      if (formats.includes('toml')) {
-        writeFileSync(`${baseName}.toml`, toToml(obj));
-        outputs.push(`${baseName}.toml`);
-      }
-      if (formats.includes('env')) {
-        writeFileSync(`${baseName}.env`, toEnv(obj));
-        outputs.push(`${baseName}.env`);
+      for (const fmt of formats) {
+        const ext = fmt === 'env' ? '.env' : `.${fmt}`;
+        const outFile = joinPath(outDir, `${basename(baseName)}${ext}`);
+
+        if (!opts.force && existsSync(outFile)) {
+          error(`✗ ${outFile} already exists. Use --force to overwrite.`);
+          process.exit(1);
+        }
+
+        let outContent = '';
+        if (fmt === 'json') {
+          outContent = JSON.stringify(obj, null, 2);
+        } else if (fmt === 'yaml') {
+          outContent = toYaml(obj);
+        } else if (fmt === 'toml') {
+          outContent = toToml(obj);
+        } else if (fmt === 'env') {
+          outContent = toEnv(obj);
+        }
+        writeFileSync(outFile, outContent);
+        outputs.push(outFile);
       }
 
       if (!opts.quiet) {
@@ -261,12 +273,161 @@ blog:
     log(`\nTry: lean parse ${filename}`);
   });
 
+// ── sql ──────────────────────────────────────────────────────────────────
+program
+  .command('sql')
+  .description('Run SQL queries on .lean files (SQLite-backed)')
+  .argument('<query>', 'SQL query (e.g. \'SELECT name FROM users\')')
+  .argument('[files...]', 'One or more .lean files')
+  .option('--format <fmt>', 'Output format: json (default) or lean', 'json')
+  .option('--pretty', 'Pretty-print JSON output')
+  .action(async (query, files, opts) => {
+    const { sqlCommand } = await import('./sql.js');
+    if (!files || files.length === 0) {
+      const leanFiles = readdirSync(process.cwd()).filter(f => f.endsWith('.lean'));
+      if (leanFiles.length === 0) {
+        error('No .lean files found. Specify files: lean sql "SELECT ..." file.lean');
+        process.exit(1);
+      }
+      files = leanFiles;
+    }
+    await sqlCommand(files, query, { format: opts.format, pretty: opts.pretty });
+  });
+
+// ── watch ────────────────────────────────────────────────────────────────
+program
+  .command('watch')
+  .description('Watch .lean files for changes, emit incremental diffs')
+  .argument('[files...]', '.lean files to watch')
+  .option('--format <fmt>', 'Output format: text (default) or json', 'text')
+  .option('--serve <port>', 'Start SSE HTTP server on port for live dashboards', parseInt)
+  .option('--debounce <ms>', 'Debounce interval in ms', '200')
+  .option('-q, --quiet', 'Suppress info messages')
+  .action(async (files, opts) => {
+    const { watchCommand } = await import('./watch.js');
+    if (!files || files.length === 0) {
+      files = readdirSync(process.cwd()).filter((f: string) => f.endsWith('.lean'));
+      if (files.length === 0) {
+        error('No .lean files found to watch.');
+        process.exit(1);
+      }
+    }
+    await watchCommand(files, {
+      format: opts.format,
+      serve: opts.serve,
+      debounce: parseInt(opts.debounce) || 200,
+      quiet: opts.quiet,
+    });
+  });
+
+// ── fuzz ─────────────────────────────────────────────────────────────────
+program
+  .command('fuzz')
+  .description('Property-based fuzz testing — random valid LEAN, parse/format/parse, assert equality')
+  .option('-n, --iterations <n>', 'Number of fuzz iterations', '10000')
+  .option('--seed <n>', 'Random seed (reproduce failures)', parseInt)
+  .option('-q, --quiet', 'JSON output for machine processing')
+  .action(async (opts) => {
+    const { fuzzCommand } = await import('./fuzz.js');
+    await fuzzCommand({
+      iterations: parseInt(opts.iterations) || 10000,
+      seed: opts.seed,
+      quiet: opts.quiet,
+    });
+  });
+
+// ── migrate ──────────────────────────────────────────────────────────────
+const migrate = program.command('migrate').description('Schema evolution tool with up/down LEAN scripts');
+
+migrate
+  .command('create <name>')
+  .description('Create a new migration file')
+  .option('--dir <path>', 'Migrations directory', 'migrations')
+  .option('-q, --quiet', 'Suppress output')
+  .action(async (name, opts) => {
+    const { migrateCreateCommand } = await import('./migrate.js');
+    await migrateCreateCommand(name, { dir: opts.dir, quiet: opts.quiet });
+  });
+
+migrate
+  .command('up')
+  .description('Apply all pending migrations')
+  .option('--dir <path>', 'Migrations directory', 'migrations')
+  .option('-q, --quiet', 'Suppress output')
+  .action(async (opts) => {
+    const { migrateUpCommand } = await import('./migrate.js');
+    await migrateUpCommand({ dir: opts.dir, quiet: opts.quiet });
+  });
+
+migrate
+  .command('down')
+  .description('Roll back the last migration')
+  .option('--dir <path>', 'Migrations directory', 'migrations')
+  .option('-q, --quiet', 'Suppress output')
+  .action(async (opts) => {
+    const { migrateDownCommand } = await import('./migrate.js');
+    await migrateDownCommand({ dir: opts.dir, quiet: opts.quiet });
+  });
+
+migrate
+  .command('status')
+  .description('Show migration status')
+  .option('--dir <path>', 'Migrations directory', 'migrations')
+  .option('-q, --quiet', 'Suppress output')
+  .action(async (opts) => {
+    const { migrateStatusCommand } = await import('./migrate.js');
+    await migrateStatusCommand({ dir: opts.dir, quiet: opts.quiet });
+  });
+
+// ── repl ─────────────────────────────────────────────────────────────────
+program
+  .command('repl')
+  .description('Interactive REPL for LEAN format exploration')
+  .argument('[file]', 'Load a .lean file on startup')
+  .option('-q, --quiet', 'Suppress banner')
+  .action(async (file, opts) => {
+    const { replCommand } = await import('./repl.js');
+    await replCommand({ file, quiet: opts.quiet });
+  });
+
+// ── publish ──────────────────────────────────────────────────────────────
+program
+  .command('publish')
+  .description('Publish .lean files to a local registry')
+  .argument('[files...]', '.lean files to publish')
+  .option('--registry <dir>', 'Registry directory', '.lean-registry')
+  .option('--force', 'Overwrite existing published files')
+  .option('-q, --quiet', 'Suppress output')
+  .action(async (files, opts) => {
+    const { publishCommand } = await import('./publish.js');
+    await publishCommand(files, { registry: opts.registry, quiet: opts.quiet, force: opts.force });
+  });
+
+// ── pull ─────────────────────────────────────────────────────────────────
+program
+  .command('pull')
+  .description('Pull .lean files from a registry')
+  .argument('<registry>', 'Registry directory or path')
+  .option('--force', 'Overwrite existing local files')
+  .option('-q, --quiet', 'Suppress output')
+  .action(async (registry, opts) => {
+    const { pullCommand } = await import('./publish.js');
+    await pullCommand(registry, { quiet: opts.quiet, force: opts.force });
+  });
+
 // ── help override ──────────────────────────────────────────────────────
 program.on('--help', () => {
   log('\nCreative Features (beyond spec):');
-  log('  lean diff <a> <b>        Structural diff between two .lean files');
-  log('  lean query <file> <path>  JMESPath-style query (e.g. "users[0].name")');
-  log('  lean schema <file>        Generate JSON Schema from sample data');
+  log('  lean diff <a> <b>           Structural diff between two .lean files');
+  log('  lean query <file> <path>     JMESPath-style query (e.g. "users[0].name")');
+  log('  lean schema <file>           Generate JSON Schema from sample data');
+  log('  lean sql <query> [files..]   SQL queries on .lean files');
+  log('  lean watch [files..]         Watch for changes, emit patches');
+  log('  lean fuzz                    Property-based fuzz testing');
+  log('  lean migrate create|up|down  Schema evolution');
+  log('  lean repl [file]             Interactive LEAN REPL');
+  log('  lean publish [files..]       Publish .lean files to registry');
+  log('  lean pull <registry>         Pull .lean files from registry');
   log('\nUnix piping:');
   log('  cat data.lean | lean parse | jq .name');
   log('  curl api.com/data.json | lean format');

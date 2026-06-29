@@ -373,37 +373,56 @@ try {
 
 ---
 
-## Performance Considerations
+## Performance
+
+The JS parser delivers **~59 MB/s** throughput at 10MB, with a **~46 µs** warm parse time for typical config files (5KB). See the [README](../README.md#performance) for the full benchmark table.
 
 ### Caching Parsed Results
-```javascript
-const cache = new Map();
 
-function parseCached(leanText) {
-  const hash = crypto.createHash('md5').update(leanText).digest('hex');
-  if (cache.has(hash)) {
-    return cache.get(hash);
-  }
-  const parsed = parse(leanText);
-  cache.set(hash, parsed);
-  return parsed;
-}
+Uses an LRU cache with content-hash keys and option-aware lookups:
+
+```typescript
+import { ParseCache, cachedParse } from '@lean-format/core';
+
+// Global default cache (max 64 entries)
+const result = await cachedParse(input, options);
+
+// Or create your own with custom size
+const cache = new ParseCache(128);
+const result = await cachedParse(input, options, cache);
+
+console.log(cache.stats()); // { hits, misses, evictions, size, maxSize }
 ```
 
-### Streaming Large Payloads (Future)
-> Streaming parsing is not yet supported by the reference implementation. This example shows the intended future API.
+### Incremental Parsing
 
-```javascript
-import { Readable } from 'stream';
+Re-parses only changed top-level blocks when the document is edited — useful in editors or watch-mode tools:
 
-app.post('/api/bulk', (req, res) => {
-  const stream = Readable.from(req.body.split('\n\n'));
-  
-  stream.on('data', (chunk) => {
-    const data = parse(chunk.toString());
-    processBulkItem(data);
-  });
-});
+```typescript
+import { IncrementalParser } from '@lean-format/core';
+
+const parser = new IncrementalParser();
+let doc = parser.parse(initialText);  // full parse
+doc = parser.parse(editedText);       // only changed blocks re-parsed
+doc = parser.parse(identicalText);    // returns cached result instantly
+parser.reset();                        // clear state
+```
+
+### Semantic Analysis
+
+Post-parse analysis detects type inconsistencies, trailing commas, mixed indentation, and suspicious references:
+
+```typescript
+import { parse, analyze, formatWarnings } from '@lean-format/core';
+
+const data = parse(text);
+const analysis = analyze(text, data);
+
+if (analysis.warnings.length > 0) {
+  console.warn(formatWarnings(analysis));
+  // e.g. "type-inconsistency[key.value]: has inconsistent types: string, number"
+  //      "trailing-comma[line 3]: Trailing comma on line 3"
+}
 ```
 
 ---

@@ -364,6 +364,6 @@ impl Lexer {
     }
 
     fn is_identifier_part(ch: char) -> bool {
-        ch == '#' || ch.is_ascii_alphanumeric() || ch == '_' || ch == '$' || ch == '.' || ch == '-'
+        ch.is_ascii_alphanumeric() || ch == '_' || ch == '$' || ch == '.' || ch == '-'
     }
 }

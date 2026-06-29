@@ -67,6 +67,44 @@ console.log(data);
 - **[CLI Tool](./packages/cli)**: Command-line interface for converting and validating LEAN files.
 - **[VS Code Extension](./packages/vscode)**: Syntax highlighting and snippets for Visual Studio Code.
 
+## Performance
+
+LEAN's TypeScript parser delivers **~59 MB/s throughput** — competitive with native `JSON.parse` and **3–10× faster** than popular JS YAML/TOML parsers.
+
+| Size | JS (median) | WASM | Ratio |
+|------|:-:|:-:|:-:|
+| 10KB | 0.09 ms | 0.22 ms | 0.41x |
+| 100KB | 0.88 ms | 2.04 ms | 0.43x |
+| 1MB | 15.83 ms | 19.90 ms | 0.80x |
+| 5MB | 88.03 ms | 95.39 ms | 0.92x |
+| 10MB | 169.08 ms | 190.31 ms | 0.89x |
+
+- **Warm parse (5KB):** ~46 µs — 21,544 parses/sec
+- **Throughput:** 59 MB/s (10MB in 169 ms)
+- JS beats WASM at every tested size with no crossover
+- Measured via median of 10K–20 iterations per size with 100-iteration JIT warm-up
+
+## Advanced Usage
+
+```typescript
+import { parse, format } from '@lean-format/core';
+import { ParseCache, cachedParse } from '@lean-format/core';
+import { IncrementalParser } from '@lean-format/core';
+import { analyze, formatWarnings } from '@lean-format/core';
+
+// Cached parsing (LRU cache with content-hash keys)
+const result = await cachedParse(input, { strict: true });
+
+// Incremental parsing — re-parses only changed blocks
+const parser = new IncrementalParser();
+let doc = parser.parse(text);
+doc = parser.parse(editedText); // only modified blocks re-parsed
+
+// Semantic analysis — type consistency, trailing commas, mixed indent
+const analysis = analyze(text, parsed);
+console.log(formatWarnings(analysis));
+```
+
 ### CLI with Piping
 
 ```bash

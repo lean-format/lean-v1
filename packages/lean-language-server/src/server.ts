@@ -21,6 +21,9 @@ import { validate, initParser } from '@lean-format/core';
 const connection = createConnection(ProposedFeatures.all);
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
+// LSP configuration — merged from workspace/didChangeConfiguration
+const config: { strict: boolean; maxDepth?: number; maxInputSize?: number } = { strict: true };
+
 // Initialize WASM parser on startup
 initParser().catch(() => {
   connection.console.log('WASM parser unavailable, using JS fallback');
@@ -41,6 +44,35 @@ connection.onInitialize((_params: InitializeParams) => {
   return result;
 });
 
+connection.onInitialized(async () => {
+  // Request workspace configuration on startup
+  try {
+    const settings = await connection.workspace.getConfiguration({
+      section: 'lean',
+    });
+    if (settings) {
+      config.strict = settings.strict !== false; // default true for safety
+      if (typeof settings.maxDepth === 'number') config.maxDepth = settings.maxDepth;
+      if (typeof settings.maxInputSize === 'number') config.maxInputSize = settings.maxInputSize;
+    }
+  } catch {
+    // Use defaults
+  }
+});
+
+connection.onDidChangeConfiguration(async (change) => {
+  const settings = change.settings?.lean;
+  if (settings) {
+    config.strict = settings.strict !== false;
+    if (typeof settings.maxDepth === 'number') config.maxDepth = settings.maxDepth;
+    if (typeof settings.maxInputSize === 'number') config.maxInputSize = settings.maxInputSize;
+    // Re-validate all open documents
+    for (const doc of documents.all()) {
+      validateTextDocument(doc);
+    }
+  }
+});
+
 documents.onDidChangeContent(change => {
   validateTextDocument(change.document);
 });
@@ -49,7 +81,11 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   const text = textDocument.getText();
   const diagnostics: Diagnostic[] = [];
 
-  const result = validate(text, { strict: true });
+  const result = validate(text, {
+    strict: config.strict,
+    maxDepth: config.maxDepth,
+    maxInputSize: config.maxInputSize,
+  });
 
   if (!result.valid) {
     for (const err of result.errors) {
