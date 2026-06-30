@@ -1,0 +1,10 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/guides/getting-started/page": "/guides/getting-started",
+  "/guides/best-practices/page": "/guides/best-practices",
+  "/api/core/page": "/api/core",
+  "/api/editor/page": "/api/editor",
+  "/spec/grammar/page": "/spec/grammar",
+  "/page": "/",
+  "/spec/language/page": "/spec/language"
+}

@@ -6,6 +6,19 @@ import type { ParseOptions } from './types.js';
 const DEFAULT_MAX_DEPTH = 100;
 
 /**
+ * Parse LEAN format text and return the resulting data object.
+ */
+export function parse(input: string, options: ParseOptions = {}): Record<string, unknown> {
+  const parser = new JsLeanParser(options.strict ?? false, options);
+  return parser.parse(input);
+}
+
+/**
+ * Synchronous alias for parse.
+ */
+export const parseSync = parse;
+
+/**
  * Pure TypeScript LEAN parser.
  * Used as a fallback when the WASM parser is unavailable.
  * Mirrors the behavior of the Rust WASM parser.

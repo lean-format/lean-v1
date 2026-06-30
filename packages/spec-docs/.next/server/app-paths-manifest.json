@@ -1,0 +1,10 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/guides/getting-started/page": "app/guides/getting-started/page.js",
+  "/guides/best-practices/page": "app/guides/best-practices/page.js",
+  "/api/core/page": "app/api/core/page.js",
+  "/api/editor/page": "app/api/editor/page.js",
+  "/spec/grammar/page": "app/spec/grammar/page.js",
+  "/page": "app/page.js",
+  "/spec/language/page": "app/spec/language/page.js"
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, validate, format } from './index.js';
+import { parse, parseSync, validate, format } from './index.js';
 
 // ============================================================================
 // PARSER TESTS
@@ -380,9 +380,9 @@ describe('Strict Mode', () => {
 
   it('allows extra row values in loose mode', () => {
     const input = 'users(id, name):\n  - 1, Alice, extra';
-    const result = parse(input, { strict: false });
-    expect(result.users[0].id).toBe(1);
-    expect(result.users[0].name).toBe('Alice');
+    const result = parse(input, { strict: false }) as Record<string, unknown>;
+    expect((result.users as Record<string, unknown>[])[0].id).toBe(1);
+    expect((result.users as Record<string, unknown>[])[0].name).toBe('Alice');
   });
 });
 
@@ -423,5 +423,35 @@ describe('Real-World Examples', () => {
         { str: 'world', num: 3.14, bool: false, nul: null },
       ],
     });
+  });
+});
+
+// ============================================================================
+// PARSE OPTIONS TESTS
+// ============================================================================
+
+describe('Parse Options', () => {
+  it('throws on non-string input', () => {
+    expect(() => (parse as any)(null)).toThrow('Input must be a string');
+    expect(() => (parse as any)(42)).toThrow('Input must be a string');
+  });
+
+  it('throws when input exceeds maxInputSize', () => {
+    const longInput = 'a: ' + 'x'.repeat(100);
+    expect(() => parse(longInput, { maxInputSize: 10 })).toThrow(/exceeds maximum size/i);
+  });
+
+  it('allows input within maxInputSize', () => {
+    expect(parse('a: 1', { maxInputSize: 100 })).toEqual({ a: 1 });
+  });
+});
+
+// ============================================================================
+// PARSE SYNC TESTS
+// ============================================================================
+
+describe('parseSync', () => {
+  it('parses input synchronously', () => {
+    expect(parseSync('a: 1')).toEqual({ a: 1 });
   });
 });

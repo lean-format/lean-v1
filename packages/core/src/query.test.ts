@@ -69,4 +69,53 @@ describe('LEAN Query', () => {
     expect(result.exists).toBe(true);
     expect(result.value).toBe(data);
   });
+
+  it('returns root for whitespace-only path', () => {
+    const result = query(data, '  ');
+    expect(result.exists).toBe(true);
+    expect(result.value).toBe(data);
+  });
+
+  it('returns not found when navigating through null', () => {
+    const result = query({ a: null }, 'a.b');
+    expect(result.exists).toBe(false);
+  });
+
+  it('returns not found when navigating through primitive', () => {
+    const result = query({ a: 'str' }, 'a.b');
+    expect(result.exists).toBe(false);
+  });
+
+  it('returns not found when key access on array', () => {
+    const result = query([1, 2, 3], 'someKey');
+    expect(result.exists).toBe(false);
+  });
+
+  it('handles wildcard with no matches', () => {
+    const result = query([{ a: 1 }], '[*].nonexistent');
+    expect(result.exists).toBe(false);
+    expect(result.value).toEqual([]);
+  });
+
+  it('handles wildcard on non-array', () => {
+    const result = query({ a: 1 }, '[*]');
+    expect(result.exists).toBe(false);
+  });
+
+  it('handles index access on non-array', () => {
+    const result = query({ a: 1 }, '[0]');
+    expect(result.exists).toBe(false);
+  });
+
+  it('treats unmatched bracket content as key', () => {
+    const result = query(data, 'users[abc]');
+    expect(result.exists).toBe(false);
+  });
+
+  it('returns full array for wildcard at end of path', () => {
+    const result = query(data, 'users[*]');
+    expect(result.exists).toBe(true);
+    expect(Array.isArray(result.value)).toBe(true);
+    expect((result.value as any[]).length).toBe(3);
+  });
 });

@@ -1,0 +1,23 @@
+{
+  "name": "lean-desktop",
+  "version": "2.4.0",
+  "description": "LEAN Format Desktop Application",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "pnpm --filter @lean-format/playground build && tauri build",
+    "preview": "tauri dev -- --release",
+    "clean": "rm -rf src-tauri/target src-tauri/icons"
+  },
+  "dependencies": {
+    "@lean-format/core": "workspace:*",
+    "@lean-format/editor": "workspace:*",
+    "@lean-format/ui": "workspace:*",
+    "@lean-format/playground": "workspace:*"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
+    "typescript": "^5.9.3"
+  }
+}

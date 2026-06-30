@@ -35,6 +35,13 @@ describe('ParseCache', () => {
     await expect(cachedParse(input, { strict: true }, cache)).resolves.toEqual({ key: 'strict' });
   });
 
+  it('set without eviction keeps evictions at 0', () => {
+    const cache = new ParseCache(10);
+    cache.set('a: 1', {}, { a: 1 });
+    expect(cache.evictions).toBe(0);
+    expect(cache.size).toBe(1);
+  });
+
   it('clear resets everything', () => {
     const cache = new ParseCache(10);
     cache.set('key: 1', {}, { key: 1 });
@@ -42,6 +49,8 @@ describe('ParseCache', () => {
     cache.clear();
     expect(cache.size).toBe(0);
     expect(cache.stats().hits).toBe(0);
+    expect(cache.stats().misses).toBe(0);
+    expect(cache.stats().evictions).toBe(0);
   });
 
   it('tracks stats correctly', () => {
@@ -54,5 +63,17 @@ describe('ParseCache', () => {
     expect(stats.hits).toBe(1);
     expect(stats.misses).toBe(1);
     expect(stats.size).toBe(1);
+  });
+
+  it('cachedParse works with default cache', async () => {
+    const result = await cachedParse('key: val');
+    expect(result).toHaveProperty('key', 'val');
+  });
+
+  it('cachedParse returns cached result on repeated call', async () => {
+    const cache = new ParseCache(10);
+    const r1 = await cachedParse('a: 1', {}, cache);
+    const r2 = await cachedParse('a: 1', {}, cache);
+    expect(r1).toEqual(r2);
   });
 });

@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --lean-primary: #6366f1;
+    --lean-secondary: #6366f1;
+    --lean-bg: #ffffff;
+    --lean-surface: #f8fafc;
+    --lean-border: #e2e8f0;
+    --lean-text: #0f172a;
+    --lean-text-secondary: #64748b;
+    --lean-error: #ef4444;
+    --lean-warning: #f59e0b;
+    --lean-success: #22c55e;
+  }
+
+  .dark {
+    --lean-bg: #0f172a;
+    --lean-surface: #1e293b;
+    --lean-border: #334155;
+    --lean-text: #f1f5f9;
+    --lean-text-secondary: #94a3b8;
+  }
+
+  body {
+    @apply bg-[var(--lean-bg)] text-[var(--lean-text)];
+  }
+}
+
+@layer components {
+  .lean-card {
+    @apply rounded-lg border border-[var(--lean-border)] bg-[var(--lean-surface)] p-4 shadow-sm;
+  }
+
+  .lean-btn {
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors;
+  }
+
+  .lean-btn-primary {
+    @apply lean-btn bg-lean-primary text-white hover:bg-lean-600;
+  }
+
+  .lean-btn-secondary {
+    @apply lean-btn border border-[var(--lean-border)] bg-[var(--lean-surface)] hover:bg-gray-100 dark:hover:bg-gray-800;
+  }
+
+  .lean-input {
+    @apply w-full rounded-md border border-[var(--lean-border)] bg-[var(--lean-bg)] px-3 py-2 text-sm;
+  }
+
+  .lean-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .lean-badge-error {
+    @apply lean-badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400;
+  }
+
+  .lean-badge-warning {
+    @apply lean-badge bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400;
+  }
+
+  .lean-badge-info {
+    @apply lean-badge bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400;
+  }
+
+  .lean-token-keyword {
+    @apply text-purple-600 dark:text-purple-400;
+  }
+
+  .lean-token-string {
+    @apply text-green-600 dark:text-green-400;
+  }
+
+  .lean-token-number {
+    @apply text-blue-600 dark:text-blue-400;
+  }
+
+  .lean-token-comment {
+    @apply text-gray-400 dark:text-gray-500 italic;
+  }
+
+  .lean-token-identifier {
+    @apply text-cyan-600 dark:text-cyan-400;
+  }
+
+  .lean-token-arrow {
+    @apply text-orange-500 dark:text-orange-400 font-bold;
+  }
+}

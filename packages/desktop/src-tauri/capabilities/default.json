@@ -1,0 +1,15 @@
+{
+  "identifier": "default",
+  "description": "Default capabilities for LEAN Studio",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "shell:allow-open",
+    "shell:allow-execute",
+    "dialog:default",
+    "fs:default",
+    "notification:default",
+    "clipboard-manager:default",
+    "global-shortcut:default"
+  ]
+}

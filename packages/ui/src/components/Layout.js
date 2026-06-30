@@ -1,0 +1,6 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useTheme } from '../hooks/useTheme';
+export function Layout({ children, sidebar, topNav, title = 'LEAN Format' }) {
+    const { theme, toggleTheme } = useTheme();
+    return (_jsxs("div", { className: "min-h-screen bg-[var(--lean-bg)] text-[var(--lean-text)]", children: [_jsx("header", { className: "sticky top-0 z-50 border-b border-[var(--lean-border)] bg-[var(--lean-bg)]/80 backdrop-blur-sm", children: _jsxs("div", { className: "flex items-center justify-between px-4 h-12", children: [_jsx("div", { className: "flex items-center gap-2", children: _jsx("span", { className: "font-bold text-lean-primary", children: title }) }), _jsxs("div", { className: "flex items-center gap-3", children: [topNav, _jsx("button", { onClick: toggleTheme, className: "lean-btn-secondary text-xs px-2 py-1 rounded", title: `Switch to ${theme === 'light' ? 'dark' : 'light'} mode`, children: theme === 'light' ? '🌙' : '☀️' })] })] }) }), _jsxs("div", { className: "flex", children: [sidebar && (_jsx("aside", { className: "w-56 shrink-0 border-r border-[var(--lean-border)] bg-[var(--lean-surface)] min-h-[calc(100vh-3rem)] overflow-y-auto", children: _jsx("nav", { className: "p-3", children: sidebar }) })), _jsx("main", { className: "flex-1 p-4 max-w-full overflow-auto", children: children })] })] }));
+}

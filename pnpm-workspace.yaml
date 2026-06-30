@@ -1,0 +1,12 @@
+packages:
+  - 'packages/core'
+  - 'packages/editor'
+  - 'packages/ui'
+  - 'packages/playground'
+  - 'packages/spec-docs'
+  - 'packages/cli'
+  - 'packages/desktop'
+allowBuilds:
+  esbuild: set this to true or false
+  sharp: set this to true or false
+onlyBuiltDependencies: esbuild

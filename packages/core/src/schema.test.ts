@@ -158,4 +158,53 @@ describe('Schema Validation', () => {
     expect(validateSchema({ items: [1, 2] }, schema).valid).toBe(true);
     expect(validateSchema({ items: [] }, schema).valid).toBe(false);
   });
+
+  it('rejects non-array value when array expected', () => {
+    const schema = {
+      type: 'object' as const,
+      properties: {
+        items: { type: 'array' as const, items: { type: 'number' as const } },
+      },
+    };
+    const result = validateSchema({ items: 'not_an_array' }, schema);
+    expect(result.valid).toBe(false);
+  });
+
+  it('detects invalid array items', () => {
+    const schema = {
+      type: 'object' as const,
+      properties: {
+        items: { type: 'array' as const, items: { type: 'number' as const } },
+      },
+    };
+    const result = validateSchema({ items: [1, 'bad', 3] }, schema);
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects array exceeding maxItems', () => {
+    const schema = {
+      type: 'object' as const,
+      properties: {
+        items: { type: 'array' as const, items: { type: 'number' as const }, maxItems: 2 },
+      },
+    };
+    const result = validateSchema({ items: [1, 2, 3] }, schema);
+    expect(result.valid).toBe(false);
+  });
+
+  it('handles invalid regex pattern gracefully', () => {
+    const schema = {
+      type: 'object' as const,
+      properties: {
+        code: { type: 'string' as const, pattern: '[invalid' },
+      },
+    };
+    const result = validateSchema({ code: 'ABC' }, schema);
+    expect(result.valid).toBe(false);
+  });
+
+  it('generates schema with type any for undefined values', () => {
+    const schema = generateSchema({ a: undefined as any });
+    expect(schema.properties!.a.type).toBe('any');
+  });
 });

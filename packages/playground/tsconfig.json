@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "paths": {
+      "@lean-format/core": ["../core/src"],
+      "@lean-format/editor": ["../editor/src"],
+      "@lean-format/ui": ["../ui/src"]
+    }
+  },
+  "include": ["src"]
+}

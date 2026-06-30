@@ -303,25 +303,25 @@ describe('Benchmark: Schema Validation', () => {
 
 describe('Benchmark: Query', () => {
   it('queries top-level key in under 1ms avg', () => {
-    const data = parse(leanConfig) as Record<string, unknown>;
+    const data = parse(leanConfig) as unknown as Record<string, unknown>;
     const avg = measure(() => { query(data, 'app'); }, 500);
     expect(avg).toBeLessThan(1);
   });
 
   it('queries deeply nested key in under 1ms avg', () => {
-    const data = parse(leanConfig) as Record<string, unknown>;
+    const data = parse(leanConfig) as unknown as Record<string, unknown>;
     const avg = measure(() => { query(data, 'server.ssl.enabled'); }, 500);
     expect(avg).toBeLessThan(1);
   });
 
   it('queries array index in under 1ms avg', () => {
-    const data = parse(leanConfig) as Record<string, unknown>;
+    const data = parse(leanConfig) as unknown as Record<string, unknown>;
     const avg = measure(() => { query(data, 'users[3].name'); }, 500);
     expect(avg).toBeLessThan(1);
   });
 
   it('queries non-existent path returns quickly in under 1ms avg', () => {
-    const data = parse(leanConfig) as Record<string, unknown>;
+    const data = parse(leanConfig) as unknown as Record<string, unknown>;
     const avg = measure(() => { query(data, 'nonexistent.deep.path'); }, 500);
     expect(avg).toBeLessThan(1);
   });

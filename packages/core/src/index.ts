@@ -1,49 +1,47 @@
-// ============================================================================
-// LEAN Format - Core Library
-// Lightweight Efficient Adaptive Notation
-// ============================================================================
-
-// Parser
-export { parse, parseSync, initParser, isWasmAvailable, getWasmError } from './parser.js';
+export { parse, parseWasm } from './parser.js';
+export { parse as parseData, parseSync } from './js-parser.js';
 export { JsLeanParser } from './js-parser.js';
-
-// Serializer
+export { validate as validateSource } from './parser.js';
+export { format as formatSource } from './parser.js';
 export { format } from './serializer.js';
-
-// Validator
 export { validate, validateStrict } from './validator.js';
-
-// Schema validation
 export { SchemaValidator, validateSchema, generateSchema } from './schema.js';
-
-// Query and diff (creative features)
 export { query } from './query.js';
 export { diff, formatDiff } from './diff.js';
-
-// Cache
 export { ParseCache, cachedParse, defaultCache } from './cache.js';
-
-// Incremental parser
+export { ErrorCode, LeanParseError, LeanSerializeError } from './errors.js';
 export { IncrementalParser, parseIncremental, defaultIncrementalParser } from './incremental.js';
-
-// Semantic analysis
+export { LeanLexer } from './lexer.js';
+export { generateTypeScript, generatePython, generateGo } from './codegen.js';
 export { analyze, hasWarnings, formatWarnings } from './semantic.js';
-export type { SemanticWarning, SemanticResult } from './semantic.js';
-
-// Types
 export type {
-  LeanValue,
+  SemanticWarning,
+  SemanticResult,
+} from './semantic.js';
+export type {
+  ASTNode,
+  ASTNodeType,
+  ParseResult,
+  ParseError,
+  ValidationResult,
+  ValidationSeverity,
+  Position,
+  SourceLocation,
+  Token,
+  TokenValueType,
   ParseOptions,
   FormatOptions,
-  ValidationError,
-  ValidationResult,
   LeanSchema,
   SchemaValidationError,
   SchemaValidationResult,
-  DiffEntry,
   QueryResult,
+  DiffEntry,
+  ValidationError,
+  ValidationResponse,
 } from './types.js';
+export { LEAN_VERSION, TokenType } from './types.js';
 
-// Classes
-export { LeanParseError, LeanSerializeError, ErrorCode } from './errors.js';
-export type { ErrorCodeType } from './errors.js';
+// WASM parser stubs (WASM support removed — JS-only fallback)
+export async function initParser(): Promise<void> {}
+export function isWasmAvailable(): boolean { return false; }
+export function getWasmError(): Error | null { return null; }

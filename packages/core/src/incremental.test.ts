@@ -55,4 +55,43 @@ describe('IncrementalParser', () => {
     const result = parseIncremental('key: value') as Record<string, unknown>;
     expect(result.key).toBe('value');
   });
+
+  it('handles completely different text', () => {
+    const parser = new IncrementalParser();
+    parser.parse('name: Alice');
+    const r2 = parser.parse('age: 30') as Record<string, unknown>;
+    expect(r2).not.toHaveProperty('name');
+    expect(r2).toHaveProperty('age', 30);
+  });
+
+  it('handles adding a new block', () => {
+    const parser = new IncrementalParser();
+    parser.parse('name: Alice');
+    const r2 = parser.parse('name: Alice\nage: 30') as Record<string, unknown>;
+    expect(r2).toHaveProperty('name', 'Alice');
+    expect(r2).toHaveProperty('age', 30);
+  });
+
+  it('handles removing a block', () => {
+    const parser = new IncrementalParser();
+    parser.parse('name: Alice\nage: 30');
+    const r2 = parser.parse('name: Alice') as Record<string, unknown>;
+    expect(r2).toHaveProperty('name', 'Alice');
+    expect(r2).not.toHaveProperty('age');
+  });
+
+  it('parseIncremental works with explicit parser', () => {
+    const parser = new IncrementalParser();
+    const result = parseIncremental('key: value', {}, parser) as Record<string, unknown>;
+    expect(result.key).toBe('value');
+  });
+
+  it('returns prevResult when change does not affect any top-level block', () => {
+    const parser = new IncrementalParser();
+    const r1 = parser.parse('# comment\na: 1\nb: 2') as Record<string, unknown>;
+    const r2 = parser.parse('# different\na: 1\nb: 2') as Record<string, unknown>;
+    expect(r1).toBe(r2);
+    expect(r1.a).toBe(1);
+    expect(r1.b).toBe(2);
+  });
 });

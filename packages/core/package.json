@@ -1,73 +1,33 @@
 {
   "name": "@lean-format/core",
-  "version": "2.1.0",
-  "description": "LEAN (Lightweight Efficient Adaptive Notation) - A minimal, human-readable data interchange format",
+  "version": "0.0.0",
+  "description": "LEAN Format parser core - WASM-compiled parser with JS fallback",
   "type": "module",
   "main": "./dist/index.js",
-  "module": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
       "default": "./dist/index.js"
     }
   },
   "files": [
     "dist",
-    "src",
-    "README.md"
+    "wasm"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "clean": "rm -rf dist",
-    "test": "cd ../.. && vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build",
-    "docs": "typedoc src/index.ts"
+    "lint": "echo 'no linter configured'"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "dependencies": {
-    "lean-parser-rs": "file:../lean-parser-rs/pkg"
-  },
-  "optionalDependencies": {},
   "devDependencies": {
+    "@types/node": "^22.20.0",
+    "tsup": "^8.4.0",
     "typescript": "^5.9.3",
-    "vitest": "^3.1.3",
-    "eslint": "^9.26.0",
-    "typedoc": "^0.28.0"
-  },
-  "keywords": [
-    "lean",
-    "format",
-    "data",
-    "notation",
-    "parser",
-    "serializer",
-    "json",
-    "yaml",
-    "csv",
-    "interchange",
-    "compact",
-    "human-readable"
-  ],
-  "author": "LEAN Format Team",
-  "license": "MIT",
-  "publishConfig": {
-    "provenance": true,
-    "access": "public"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/lean-format/lean-v1.git"
-  },
-  "bugs": {
-    "url": "https://github.com/lean-format/lean-v1/issues"
-  },
-  "homepage": "https://lean-format.github.io/lean-v1/"
+    "vitest": "^4.1.9"
+  }
 }

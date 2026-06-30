@@ -1,67 +1,77 @@
-// ============================================================================
-// LEAN Format - Type Definitions
-// ============================================================================
+export interface Position {
+  line: number;
+  column: number;
+  offset: number;
+}
 
-/** Value types that can be represented in LEAN */
-export type LeanValue =
-  | string
-  | number
-  | boolean
-  | null
-  | LeanValue[]
-  | { [key: string]: LeanValue };
+export interface SourceLocation {
+  start: Position;
+  end: Position;
+}
 
-/** Options for the parser */
+export type ASTNodeType =
+  | 'model'
+  | 'enum'
+  | 'relation'
+  | 'constraint'
+  | 'type'
+  | 'doc'
+  | 'field'
+  | 'attribute'
+  | 'identifier'
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'comment';
+
+export interface ASTNode {
+  type: ASTNodeType;
+  name?: string;
+  value?: unknown;
+  loc: SourceLocation;
+  children?: ASTNode[];
+  attributes?: Record<string, string | number | boolean>;
+}
+
+export interface ParseResult {
+  success: boolean;
+  ast: ASTNode[];
+  errors: ParseError[];
+  source: string;
+}
+
+export interface ParseError {
+  message: string;
+  loc: SourceLocation;
+  severity: 'error' | 'warning';
+}
+
+export type ValidationSeverity = 'error' | 'warning' | 'info';
+
+export interface ValidationResult {
+  message: string;
+  loc: SourceLocation;
+  severity: ValidationSeverity;
+  code?: string;
+}
+
 export interface ParseOptions {
-  /** Enable strict mode: reject extra row values, duplicate keys */
   strict?: boolean;
-  /** Maximum nesting depth (default: 100, 0 = unlimited) */
   maxDepth?: number;
-  /** Maximum input size in bytes (default: 0 = unlimited) */
   maxInputSize?: number;
-  /** Error code for programmatic error handling */
-  errorCode?: string;
-  /** Use dot-notation for nested keys (parser only, default: false) */
   useDotNotation?: boolean;
 }
 
-/** Options for the serializer */
 export interface FormatOptions {
-  /** Indentation string (default: '  ') */
   indent?: string;
-  /** Enable row syntax optimization (default: true) */
   useRowSyntax?: boolean;
-  /** Minimum items to use row syntax (default: 4, per spec §9.2) */
   rowThreshold?: number;
-  /** Use dot-notation for nested keys (default: false) */
   useDotNotation?: boolean;
-  /** Sort keys alphabetically (default: false) */
   sortKeys?: boolean;
 }
 
-/** A single validation error */
-export interface ValidationError {
-  /** Line number (1-indexed) */
-  line: number;
-  /** Column number (1-indexed), if available */
-  column?: number;
-  /** Error message */
-  message: string;
-  /** Suggestion for fixing, if available */
-  suggestion?: string;
-  /** Code snippet showing the error context */
-  snippet?: string;
-}
-
-/** Result of validation */
-export interface ValidationResult {
-  valid: boolean;
-  errors: ValidationError[];
-}
-
-/** Schema for LEAN data validation */
 export interface LeanSchema {
-  type?: 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null' | 'any';
+  type?: string;
   properties?: Record<string, LeanSchema>;
   required?: string[];
   additionalProperties?: boolean;
@@ -74,74 +84,76 @@ export interface LeanSchema {
   minLength?: number;
   maxLength?: number;
   pattern?: string;
-  description?: string;
 }
 
-/** Schema validation error */
 export interface SchemaValidationError {
   path: string;
   message: string;
 }
 
-/** Schema validation result */
 export interface SchemaValidationResult {
   valid: boolean;
   errors: SchemaValidationError[];
 }
 
-/** A single diff entry between two LEAN documents */
-export interface DiffEntry {
-  type: 'added' | 'removed' | 'changed';
-  path: string;
-  oldValue?: unknown;
-  newValue?: unknown;
-}
-
-/** Query result with path information */
 export interface QueryResult {
   value: unknown;
   path: string;
   exists: boolean;
 }
 
-// ============================================================================
-// Internal types
-// ============================================================================
+export type DiffEntry =
+  | { type: 'added'; path: string; newValue: unknown }
+  | { type: 'removed'; path: string; oldValue: unknown }
+  | { type: 'changed'; path: string; oldValue: unknown; newValue: unknown };
 
-/** Internal LEAN token types (numeric for fast comparison) */
-export enum TokenType {
-  Indent,
-  Dedent,
-  Newline,
-  Identifier,
-  String,
-  Number,
-  Boolean,
-  Null,
-  Colon,
-  Hyphen,
-  Comma,
-  LParen,
-  RParen,
-  LBrace,
-  RBrace,
-  LBracket,
-  RBracket,
-  Eof,
+export interface ValidationError {
+  line: number;
+  column?: number;
+  message: string;
+  snippet?: string;
+  suggestion?: string;
 }
 
-/** Token value variants */
+export interface ValidationResponse {
+  valid: boolean;
+  errors: ValidationError[];
+}
+
 export type TokenValueType =
+  | { kind: 'null' }
   | { kind: 'string'; value: string }
   | { kind: 'number'; value: number }
-  | { kind: 'boolean'; value: boolean }
-  | { kind: 'null' }
-  | { kind: 'none' };
+  | { kind: 'boolean'; value: boolean };
 
-/** A single token from the lexer */
+export const TokenType = {
+  Newline: 'Newline',
+  Colon: 'Colon',
+  Hyphen: 'Hyphen',
+  Comma: 'Comma',
+  LParen: 'LParen',
+  RParen: 'RParen',
+  LBrace: 'LBrace',
+  RBrace: 'RBrace',
+  LBracket: 'LBracket',
+  RBracket: 'RBracket',
+  String: 'String',
+  Number: 'Number',
+  Boolean: 'Boolean',
+  Null: 'Null',
+  Identifier: 'Identifier',
+  Indent: 'Indent',
+  Dedent: 'Dedent',
+  Eof: 'Eof',
+} as const;
+
+export type TokenType = (typeof TokenType)[keyof typeof TokenType];
+
 export interface Token {
   type: TokenType;
   value: TokenValueType;
   line: number;
   column: number;
 }
+
+export const LEAN_VERSION = '0.1.0';

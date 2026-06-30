@@ -1,5 +1,4 @@
-import { parse } from './parser.js';
-import { JsLeanParser } from './js-parser.js';
+import { parse, JsLeanParser } from './js-parser.js';
 import { type ParseOptions } from './types.js';
 
 function findCommonPrefix(a: string, b: string): number {

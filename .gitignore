@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+.pnpm-store/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -17,6 +18,7 @@ build/
 *.swp
 *.swo
 *~
+*.pem
 
 # Testing
 coverage/
@@ -50,7 +52,6 @@ Thumbs.db
 /.next/
 /out/
 next-env.d.ts
-/packages/website/.next/
 
 # Vercel
 /.vercel
@@ -59,7 +60,7 @@ next-env.d.ts
 # Rust/WASM
 target/
 **/target/
+*.wasm
 
-# Misc
-*.pem
-/.agent/
+# pnpm
+pnpm-lock.yaml
