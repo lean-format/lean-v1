@@ -17,7 +17,7 @@
   },
   "files": ["dist"],
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && mkdir -p dist/styles && cp src/styles/globals.css dist/styles/globals.css",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
     "lint": "echo 'no linter configured'"
